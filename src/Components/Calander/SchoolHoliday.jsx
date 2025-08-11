@@ -7,9 +7,17 @@ import {
   Clock,
   Info,
   X,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Award,
+  Gift,
+  Home,
+  Heart,
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { apiService } from '../../api/apiService';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SchoolHoliday = () => {
   const branchId = useSelector((state) => state.auth.user.branchId);
@@ -21,9 +29,8 @@ const SchoolHoliday = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
-  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const [activeTooltipDate, setActiveTooltipDate] = useState(null);
-
+  const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'list'
 
   const handleDayClick = (event, dateStr) => {
     const dayData = calendarData?.calendar?.find(
@@ -31,35 +38,26 @@ const SchoolHoliday = () => {
     );
 
     if (dayData) {
-      // Get click position
       const rect = event.target.getBoundingClientRect();
-      setPopupPosition({
-        top: rect.top + window.scrollY,
-        left: rect.left + window.scrollX,
-      });
       setSelectedHoliday(dayData);
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const isTooltip = e.target.closest('.holiday-tooltip');
+      const isDayCell = e.target.closest('.holiday-day-cell');
 
-useEffect(() => {
-  const handleClickOutside = (e) => {
-    const isTooltip = e.target.closest('.holiday-tooltip');
-    const isDayCell = e.target.closest('.holiday-day-cell');
+      if (!isTooltip && !isDayCell) {
+        setActiveTooltipDate(null);
+      }
+    };
 
-    // only close tooltip if clicked outside both tooltip and calendar day
-    if (!isTooltip && !isDayCell) {
-      setActiveTooltipDate(null);
-    }
-  };
-
-  document.addEventListener('click', handleClickOutside);
-  return () => {
-    document.removeEventListener('click', handleClickOutside);
-  };
-}, []);
-
-
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     fetchCalendarData();
@@ -90,19 +88,21 @@ useEffect(() => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + direction);
     setCurrentDate(newDate);
-    setSelectedHoliday(null); // Close popup when changing months
+    setSelectedHoliday(null);
   };
 
   const getHolidayTypeColor = (type) => {
     switch (type?.toLowerCase()) {
       case 'national':
-        return 'bg-red-500';
+        return 'from-red-500 to-red-600';
       case 'religious':
-        return 'bg-orange-500';
+        return 'from-orange-500 to-orange-600';
       case 'regional':
-        return 'bg-blue-500';
+        return 'from-blue-500 to-blue-600';
+      case 'school':
+        return 'from-purple-500 to-purple-600';
       default:
-        return 'bg-orange-300';
+        return 'from-orange-400 to-orange-500';
     }
   };
 
@@ -114,8 +114,25 @@ useEffect(() => {
         return '🕉️';
       case 'regional':
         return '🏛️';
+      case 'school':
+        return '🎓';
       default:
         return '🎉';
+    }
+  };
+
+  const getHolidayTypeBg = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'national':
+        return 'bg-red-50 border-red-200';
+      case 'religious':
+        return 'bg-orange-50 border-orange-200';
+      case 'regional':
+        return 'bg-blue-50 border-blue-200';
+      case 'school':
+        return 'bg-purple-50 border-purple-200';
+      default:
+        return 'bg-orange-50 border-orange-200';
     }
   };
 
@@ -127,6 +144,14 @@ useEffect(() => {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const getDaysUntilHoliday = (dateStr) => {
+    const holidayDate = new Date(dateStr);
+    const today = new Date();
+    const diffTime = holidayDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
   const renderCalendarGrid = () => {
@@ -145,7 +170,7 @@ useEffect(() => {
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-12 md:h-16"></div>);
+      days.push(<div key={`empty-${i}`} className="h-16 md:h-20"></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -155,71 +180,94 @@ useEffect(() => {
       const dayData = calendar.find((d) => d.date === dateStr);
       const isToday = isCurrentMonth && today.getDate() === day;
       const isHoliday = dayData?.isHoliday;
+      const daysUntil = isHoliday ? getDaysUntilHoliday(dateStr) : null;
 
-    days.push(
-      <div
-        key={day}
-        onClick={() => {
-          if (isHoliday) {
-            setActiveTooltipDate(
-              activeTooltipDate === dateStr ? null : dateStr,
-            );
-          }
-        }}
-        className={`relative group holiday-day-cell aspect-square w-full p-1 md:p-2 border border-gray-200 rounded-lg transition-all duration-200 hover:shadow-md cursor-pointer ${
-          isToday
-            ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200'
-            : 'bg-white'
-        } ${
-          isHoliday
-            ? 'bg-gradient-to-br from-orange-300 to-orange-100 border-blue-500'
-            : ''
-        }`}
-      >
-        <div className="flex flex-col h-full items-center justify-center text-center">
-          <span
-            className={`text-xs md:text-lg font-medium ${
-              isToday ? 'text-blue-600' : 'text-gray-700'
-            }`}
-          >
-            {day}
-          </span>
-        </div>
-
-        {isHoliday && (
-          <div
-            className={`holiday-tooltip absolute z-20 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-30 text-xs bg-white text-gray-800 border border-gray-200 rounded-lg shadow-lg p-3
-      ${activeTooltipDate === dateStr ? 'block' : 'hidden'} 
-      group-hover:block
-    `}
-          >
-            <div className="flex items-center mb-1">
-              <div
-                className={`w-6 h-6 rounded-full ${getHolidayTypeColor(
-                  dayData?.holidayInfo?.type,
-                )} flex items-center justify-center text-white mr-2 text-sm`}
-              >
-                {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
+      days.push(
+        <motion.div
+          key={day}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: day * 0.01 }}
+          onClick={() => {
+            if (isHoliday) {
+              setActiveTooltipDate(
+                activeTooltipDate === dateStr ? null : dateStr,
+              );
+            }
+          }}
+          className={`relative group holiday-day-cell aspect-square w-full p-1 md:p-2 border border-gray-200 rounded-xl transition-all duration-300 hover:shadow-lg cursor-pointer ${
+            isToday
+              ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 ring-2 ring-blue-300'
+              : 'bg-white hover:bg-gray-50'
+          } ${
+            isHoliday
+              ? 'bg-gradient-to-br from-orange-100 to-orange-200 border-orange-400 shadow-md hover:shadow-xl'
+              : ''
+          }`}
+        >
+          <div className="flex flex-col h-full items-center justify-center text-center">
+            <span
+              className={`text-sm md:text-lg font-semibold ${
+                isToday ? 'text-blue-700' : isHoliday ? 'text-orange-800' : 'text-gray-700'
+              }`}
+            >
+              {day}
+            </span>
+            {isHoliday && (
+              <div className="mt-1">
+                <span className="text-xs text-orange-600 font-medium">
+                  {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
+                </span>
               </div>
-              <span className="font-semibold">
-                {dayData?.holidayInfo?.name || 'Holiday'}
-              </span>
-            </div>
+            )}
           </div>
-        )}
-      </div>,
-    );
 
-
+          {isHoliday && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ 
+                opacity: activeTooltipDate === dateStr ? 1 : 0,
+                y: activeTooltipDate === dateStr ? 0 : 10
+              }}
+              className={`holiday-tooltip absolute z-20 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-white text-gray-800 border border-gray-200 rounded-xl shadow-xl p-4 ${
+                activeTooltipDate === dateStr ? 'block' : 'hidden'
+              }`}
+            >
+              <div className="flex items-center mb-2">
+                <div
+                  className={`w-8 h-8 rounded-full bg-gradient-to-r ${getHolidayTypeColor(
+                    dayData?.holidayInfo?.type,
+                  )} flex items-center justify-center text-white mr-3 text-sm`}
+                >
+                  {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
+                </div>
+                <div>
+                  <span className="font-bold text-gray-900">
+                    {dayData?.holidayInfo?.name || 'Holiday'}
+                  </span>
+                  <div className="text-xs text-gray-500">
+                    {daysUntil > 0 ? `${daysUntil} days away` : daysUntil === 0 ? 'Today!' : 'Past'}
+                  </div>
+                </div>
+              </div>
+              {dayData?.holidayInfo?.description && (
+                <p className="text-sm text-gray-600 mt-2">
+                  {dayData.holidayInfo.description}
+                </p>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
+      );
     }
 
     return (
-      <div className="grid grid-cols-7 gap-1 md:gap-2 relative">
+      <div className="grid grid-cols-7 gap-2 md:gap-3 relative">
         {/* Day headers */}
         {dayNames.map((day) => (
           <div
             key={day}
-            className="h-8 md:h-10 flex items-center justify-center font-semibold text-gray-600 text-xs md:text-sm"
+            className="h-10 md:h-12 flex items-center justify-center font-bold text-gray-600 text-sm md:text-base"
           >
             {day}
           </div>
@@ -239,70 +287,115 @@ useEffect(() => {
 
     if (holidays.length === 0) {
       return (
-        <div className="text-center py-8 text-gray-500">
-          <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium">No holidays this month</p>
-          <p className="text-sm">Enjoy your regular schedule!</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-12"
+        >
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Gift className="w-12 h-12 text-blue-500" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">No Holidays This Month</h3>
+          <p className="text-gray-600">Enjoy your regular schedule!</p>
+        </motion.div>
       );
     }
 
     return (
-      <div className="space-y-3">
-        {holidays.map((holiday, index) => (
-          <div
-            key={index}
-            className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 overflow-hidden"
-          >
-            <div className="p-4 md:p-6">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div
-                    className={`w-12 h-12 rounded-full ${getHolidayTypeColor(
-                      holiday.holidayInfo?.type,
-                    )} flex items-center justify-center text-white text-xl`}
-                  >
-                    {getHolidayTypeIcon(holiday.holidayInfo?.type)}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900 truncate">
-                      {holiday.holidayInfo?.name || 'Holiday'}
-                    </h3>
-                    <span
-                      className={`inline-flex items-center px-3.5 py-2.5 rounded-full text-xs font-large ${getHolidayTypeColor(
+      <div className="space-y-4">
+        {holidays.map((holiday, index) => {
+          const daysUntil = getDaysUntilHoliday(holiday.date);
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div
+                      className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${getHolidayTypeColor(
                         holiday.holidayInfo?.type,
-                      )} text-black`}
+                      )} flex items-center justify-center text-white text-2xl shadow-lg`}
                     >
-                      {holiday.holidayInfo?.type || 'Holiday'}
-                    </span>
+                      {getHolidayTypeIcon(holiday.holidayInfo?.type)}
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 mb-2">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {formatDate(holiday.date)}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xl font-bold text-gray-900 truncate">
+                        {holiday.holidayInfo?.name || 'Holiday'}
+                      </h3>
+                      <span
+                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ${getHolidayTypeBg(
+                          holiday.holidayInfo?.type,
+                        )}`}
+                      >
+                        {holiday.holidayInfo?.type || 'Holiday'}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600 mb-3">
+                      <Clock className="w-4 h-4 mr-2" />
+                      {formatDate(holiday.date)}
+                    </div>
+                    {daysUntil > 0 && (
+                      <div className="flex items-center text-sm text-blue-600 mb-3">
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        {daysUntil} days until this holiday!
+                      </div>
+                    )}
+                    {holiday.holidayInfo?.description && (
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {holiday.holidayInfo.description}
+                      </p>
+                    )}
                   </div>
-                  {holiday.holidayInfo?.description && (
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {holiday.holidayInfo.description}
-                    </p>
-                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
     );
   };
 
+  const stats = [
+    {
+      label: 'Total Holidays',
+      value: calendarData?.monthInfo?.holidays || 0,
+      icon: Gift,
+      color: 'from-purple-500 to-pink-500',
+    },
+    {
+      label: 'Days This Month',
+      value: calendarData?.monthInfo?.totalDays || 0,
+      icon: Calendar,
+      color: 'from-blue-500 to-cyan-500',
+    },
+    {
+      label: 'Upcoming Holidays',
+      value: calendarData?.calendar?.filter(d => d.isHoliday && getDaysUntilHoliday(d.date) > 0).length || 0,
+      icon: Star,
+      color: 'from-orange-500 to-red-500',
+    },
+  ];
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading calendar...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Calendar className="w-10 h-10 text-white animate-pulse" />
+          </div>
+          <p className="text-gray-600 font-medium text-lg">Loading holiday calendar...</p>
+        </motion.div>
       </div>
     );
   }
@@ -310,84 +403,168 @@ useEffect(() => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Info className="w-8 h-8 text-white" />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Info className="w-10 h-10 text-white" />
           </div>
-          <p className="text-red-600 font-medium">{error}</p>
+          <p className="text-red-600 font-medium text-lg mb-4">{error}</p>
           <button
             onClick={fetchCalendarData}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            className="bg-red-500 text-white px-6 py-3 rounded-xl hover:bg-red-600 transition-colors font-medium"
           >
             Try Again
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-2 rounded-sm overflow-hidden">
-      <div className="max-w-8xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Calendar Navigation */}
-          <div className="bg-white rounded-sm shadow-sm border border-gray-200">
-            <div className="p-4 md:p-1 border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Gift className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-800">School Holidays</h1>
+              <p className="text-slate-600">Plan your breaks and stay updated with school calendar</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+        >
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all"
+            >
+              <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md mb-3`}>
+                <stat.icon className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-2xl font-bold text-slate-800 mb-1">{stat.value}</div>
+              <div className="text-sm text-slate-600">{stat.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* View Toggle */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center mb-6"
+        >
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-1 shadow-sm">
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                viewMode === 'calendar'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              📅 Calendar View
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                viewMode === 'list'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                  : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              📋 List View
+            </button>
+          </div>
+        </motion.div>
+
+        {viewMode === 'calendar' ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl overflow-hidden"
+          >
+            {/* Calendar Navigation */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => navigateMonth(-1)}
-                  className="p-2 md:p-3 rounded-full hover:bg-gray-100 transition-colors"
+                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white"
                 >
-                  <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+                  <ChevronLeft className="w-6 h-6" />
                 </button>
 
-                <div className="text-center">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                <div className="text-center text-white">
+                  <h2 className="text-2xl md:text-3xl font-bold">
                     {new Intl.DateTimeFormat('en-US', {
                       month: 'long',
                       year: 'numeric',
                     }).format(currentDate)}
                   </h2>
-                  <div className="flex items-center justify-center space-x-4 mt-2 text-sm text-gray-600">
-                    <span>
-                      🎉 {calendarData?.monthInfo?.holidays || 0} Holidays
+                  <div className="flex items-center justify-center space-x-6 mt-2 text-sm opacity-90">
+                    <span className="flex items-center gap-2">
+                      <Gift className="w-4 h-4" />
+                      {calendarData?.monthInfo?.holidays || 0} Holidays
                     </span>
-                    <span>
-                      📅 {calendarData?.monthInfo?.totalDays || 0} Days
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {calendarData?.monthInfo?.totalDays || 0} Days
                     </span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => navigateMonth(1)}
-                  className="p-2 md:p-3 rounded-full hover:bg-gray-100 transition-colors"
+                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white"
                 >
-                  <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+                  <ChevronRight className="w-6 h-6" />
                 </button>
               </div>
             </div>
 
-            <div className="p-4 md:p-6 relative">
+            <div className="p-6 md:p-8">
               {renderCalendarGrid()}
-
-              {/* Holiday Popup */}
-            
             </div>
-          </div>
-
-          {/* Holidays List */}
-          <div className="bg-white rounded-sm shadow-sm border border-gray-200">
-            <div className="p-4 md:p-4 border-b border-gray-200">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center">
-                <MapPin className="w-5 h-5 md:w-6 md:h-6 mr-2 text-blue-500" />
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6">
+              <h3 className="text-2xl font-bold text-white flex items-center">
+                <MapPin className="w-6 h-6 mr-3" />
                 Holidays This Month
               </h3>
             </div>
-            <div className="p-4 md:p-6 max-h-[490px] overflow-y-auto">
+            <div className="p-6 md:p-8 max-h-[600px] overflow-y-auto">
               {renderHolidaysList()}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
