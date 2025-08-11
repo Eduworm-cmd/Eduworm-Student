@@ -1,0 +1,16 @@
+.scrolleer-bar-width::-webkit-scrollbar {
+  width: 6px;
+}
+.scrolleer-bar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.bottom-nav-safe {
+  padding-bottom: 64px;
+ }
+  /* or whatever your bottom nav height is */
+.scrollbar-hide::-webkit-scrollbar{
+    width: 10px;
+    height: 0;
+    
+}
