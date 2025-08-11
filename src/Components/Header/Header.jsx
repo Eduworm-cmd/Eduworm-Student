@@ -46,12 +46,6 @@ const WelcomeBanner = () => {
           <motion.p variants={itemVariants} className="mt-2 text-slate-600 max-w-lg">
             Ready to learn something new today? Check your assignments and upcoming events.
           </motion.p>
-          <motion.div variants={itemVariants}>
-            <button className="mt-6 bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full flex items-center gap-2 group hover:bg-indigo-700 transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transform hover:-translate-y-0.5">
-              Go to Dashboard
-              <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-            </button>
-          </motion.div>
         </div>
 
         <div className="hidden md:flex justify-end items-center h-full">
@@ -126,12 +120,12 @@ const Header = () => {
   return (
     <>
       <header className="w-full bg-white/80 backdrop-blur-lg border-b border-slate-200/70 flex items-center justify-between px-4 sm:px-6 py-3 sticky top-0 z-40">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/QuizeCards')}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
           <img src={img1} alt="Logo" className="h-10 w-auto" />
-          <div className="hidden sm:flex flex-col">
+          {/* <div className="hidden sm:flex flex-col">
             <span className="text-xs text-slate-500 font-medium">Welcome to</span>
             <h1 className="text-lg font-bold text-slate-800 -mt-0.5">{SchoolName}</h1>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center space-x-1 sm:space-x-2">

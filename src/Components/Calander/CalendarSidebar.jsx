@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Edit, Plus, Briefcase, FileText} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, Plus, Briefcase, FileText, Loader2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { apiService } from '../../api/apiService';
 import { getStudentById } from '../../api/AllApis';
 
-// --- Mock Data for demonstration ---
-const mockCalendarData = [
-    { date: '2025-08-01', status: 'present' }, { date: '2025-08-04', status: 'present' },
-    { date: '2025-08-05', status: 'present' }, { date: '2025-08-06', status: 'absent' },
-    { date: '2025-08-07', status: 'present' }, { date: '2025-08-08', status: 'present' },
-    { date: '2025-08-15', status: 'holiday' }, { date: '2025-08-26', status: 'holiday' },
-];
 const mockUpcomingTasks = [
     { icon: <Briefcase />, title: "Science Project", subtitle: "Photosynthesis Model", bgColor: "bg-sky-100", iconColor: "text-sky-600" },
     { icon: <FileText />, title: "Math Assignment 3", subtitle: "Algebraic Expressions", bgColor: "bg-rose-100", iconColor: "text-rose-600" },
@@ -18,34 +11,49 @@ const mockUpcomingTasks = [
 
 const ProfileCard = () => {
     const studentId = useSelector((state) => state.auth?.user?.studentId);
-    const [studentData, setStudentData] = useState(); 
-    const userDetails = async() =>{
+    const [studentData, setStudentData] = useState();
+    const [loading, setLoading] = useState(true);
 
-        if(!studentId){
+    const userDetails = async () => {
+        if (!studentId) {
+            setLoading(false);
             return;
         }
         try {
             const response = await getStudentById(studentId);
             setStudentData(response.data.student);
         } catch (error) {
-            console.log();
+            console.log('Error fetching student data:', error);
+        } finally {
+            setLoading(false);
         }
     }
 
-    useEffect(() =>{
+    useEffect(() => {
         userDetails();
-    },[studentId])
+    }, [studentId])
+
+    if (loading) {
+        return (
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center">
                 <img
-                    src={studentData?.avatar}
+                    src={studentData?.avatar || '/api/placeholder/64/64'}
                     alt="Profile"
                     className="w-16 h-16 rounded-full object-cover border-4 border-white ring-2 ring-indigo-200"
                 />
                 <div className="ml-4">
-                    <h3 className="font-bold text-lg text-slate-800">{studentData?.firstName}</h3>
-                    <p className="text-sm text-slate-500">{studentData?.uniqueId}</p>
+                    <h3 className="font-bold text-lg text-slate-800">{studentData?.firstName || 'Student'}</h3>
+                    <p className="text-sm text-slate-500">{studentData?.uniqueId || 'N/A'}</p>
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center mt-4 bg-slate-50 p-2 rounded-xl">
@@ -66,7 +74,15 @@ const ProfileCard = () => {
     );
 };
 
-const CalendarCard = ({ currentMonth, onMonthChange, calendarData, selectedDate, onDateSelect }) => {
+const CalendarCard = ({
+    currentMonth,
+    onMonthChange,
+    calendarData,
+    selectedDate,
+    onDateSelect,
+    loading,
+    attendancePercentage
+}) => {
     const renderCalendarGrid = () => {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth();
@@ -74,41 +90,91 @@ const CalendarCard = ({ currentMonth, onMonthChange, calendarData, selectedDate,
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayOfMonth = new Date(year, month, 1).getDay();
 
+        // Empty slots before first day of the month
         const days = Array.from({ length: firstDayOfMonth }, (_, i) => <div key={`prev-${i}`}></div>);
 
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = date.toLocaleDateString('en-CA');
             const dayData = calendarData.find(d => d.date === dateStr);
             const isToday = date.toDateString() === today.toDateString();
-            const isSelected = date.toDateString() === selectedDate.toDateString();
+            const isFutureDate = date > today;
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6; // Sunday or Saturday
 
-            const dotColors = {
-                present: 'bg-green-500',
-                absent: 'bg-red-500',
-                holiday: 'bg-orange-400',
-            };
+            let dotColor = '';
+            let status = '';
+
+            // Determine status and background color
+            if (isToday) {
+                dotColor = 'bg-blue-500 text-white';
+                status = 'Today';
+            } else if (dayData?.isHoliday) {
+                dotColor = 'bg-purple-500 text-white';
+                status = 'Holiday';
+            } else if (dayData?.attendance) {
+                switch (dayData.attendance.status) {
+                    case 'present':
+                        dotColor = isWeekend ? 'bg-gray-200 text-slate-700' : 'bg-green-500 text-white';
+                        status = 'Present';
+                        break;
+                    case 'absent':
+                        dotColor = isWeekend ? 'bg-gray-200 text-slate-700' : 'bg-red-500 text-white';
+                        status = 'Absent';
+                        break;
+                    case 'leave':
+                        dotColor = isWeekend ? 'bg-gray-200 text-slate-700' : 'bg-yellow-500 text-white';
+                        status = 'Leave';
+                        break;
+                    default:
+                        dotColor = isWeekend ? 'bg-gray-200 text-slate-700' : '';
+                        break;
+                }
+            } else if (isWeekend) {
+                dotColor = 'bg-gray-200 text-slate-700';
+                status = date.getDay() === 0 ? 'Sunday' : 'Saturday';
+            }
 
             days.push(
-                <div key={day} onClick={() => onDateSelect(date)} className="flex flex-col items-center cursor-pointer py-1">
-                    <span className={`w-8 h-8 flex items-center justify-center rounded-full font-semibold transition-all ${
-                        isSelected ? 'bg-indigo-600 text-white' : isToday ? 'bg-indigo-100 text-indigo-600' : 'text-slate-700 hover:bg-slate-100'
-                    }`}>
+                <div
+                    key={day}
+                    onClick={() => !isFutureDate && onDateSelect(date)}
+                    className={`flex flex-col items-center cursor-pointer py-1 transition-all relative group ${isFutureDate ? 'cursor-not-allowed' : ''
+                        }`}
+                >
+                    <span
+                        className={`w-8 h-8 flex items-center justify-center rounded-full font-semibold ${dotColor || (isFutureDate
+                                ? 'text-slate-400'
+                                : 'text-slate-700 hover:bg-slate-100'
+                            )
+                            }`}
+                    >
                         {day}
                     </span>
-                    {dayData?.status && <div className={`mt-1.5 w-1.5 h-1.5 rounded-full ${dotColors[dayData.status]}`}></div>}
+                    {status && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                            {status}
+                        </div>
+                    )}
                 </div>
             );
         }
+
         return days;
     };
 
     return (
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-                <p className="font-bold text-lg text-slate-800">
-                    {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                </p>
+                <div>
+                    <p className="font-bold text-lg text-slate-800">
+                        {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                    </p>
+                    {attendancePercentage !== null && (
+                        <p className="text-sm text-slate-500">
+                            Attendance: <span className="font-semibold text-indigo-600">{attendancePercentage}%</span>
+                        </p>
+                    )}
+                </div>
                 <div className="flex items-center gap-1">
                     <button onClick={() => onMonthChange(-1)} className="p-1.5 hover:bg-slate-100 rounded-md transition-colors">
                         <ChevronLeft className="w-5 h-5 text-slate-500" />
@@ -118,12 +184,42 @@ const CalendarCard = ({ currentMonth, onMonthChange, calendarData, selectedDate,
                     </button>
                 </div>
             </div>
+
             <div className="grid grid-cols-7 gap-y-2 text-center text-xs font-medium text-slate-400 mb-2">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => <div key={day}>{day}</div>)}
             </div>
-            <div className="grid grid-cols-7 gap-y-1 place-items-center">
-                {renderCalendarGrid()}
-            </div>
+
+            {loading ? (
+                <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-7 gap-y-1 place-items-center mb-4">
+                        {renderCalendarGrid()}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-green-200"></div>
+                            <span className="text-slate-600">Present</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-red-200"></div>
+                            <span className="text-slate-600">Absent</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-yellow-200"></div>
+                            <span className="text-slate-600">Leave</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span className="text-slate-600">Holiday</span>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
@@ -155,11 +251,11 @@ const QuickActionsCard = () => (
         <h3 className="font-bold text-lg text-slate-800 mb-4">Quick Actions</h3>
         <div className="space-y-3">
             <button className="w-full flex items-center gap-3 text-left p-3 rounded-lg hover:bg-slate-100 transition-colors">
-                <Edit size={18} className="text-indigo-500"/>
+                <Edit size={18} className="text-indigo-500" />
                 <span className="font-semibold text-sm text-slate-700">Apply for Leave</span>
             </button>
             <button className="w-full flex items-center gap-3 text-left p-3 rounded-lg hover:bg-slate-100 transition-colors">
-                <Plus size={18} className="text-indigo-500"/>
+                <Plus size={18} className="text-indigo-500" />
                 <span className="font-semibold text-sm text-slate-700">Add New Task</span>
             </button>
         </div>
@@ -170,28 +266,98 @@ const QuickActionsCard = () => (
 // 🏛️ MAIN COMPONENT
 // ========================================================================
 const DashboardRightPanel = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [calendarData, setCalendarData] = useState(mockCalendarData);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [calendarData, setCalendarData] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [loading, setLoading] = useState(true);
+    const [attendancePercentage, setAttendancePercentage] = useState(null);
+    const [monthInfo, setMonthInfo] = useState({});
+    const [attendanceStats, setAttendanceStats] = useState({});
 
-  const onMonthChange = (offset) => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
-  };
+    const studentId = useSelector((state) => state.auth?.user?.studentId);
+    const schoolBranch = useSelector((state) => state.auth?.user?.branchId);
 
-  return (
-    <div className="max-w-sm mx-auto space-y-6">
-        <ProfileCard />
-        <CalendarCard
-            currentMonth={currentMonth}
-            onMonthChange={onMonthChange}
-            calendarData={calendarData}
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-        />
-        <UpcomingTasksCard tasks={mockUpcomingTasks} />
-        <QuickActionsCard />
-    </div>
-  );
+    const onMonthChange = (offset) => {
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
+    };
+
+    const calculateAttendancePercentage = (data) => {
+        if (!data || data.length === 0) return 0;
+
+        const workingDays = data.filter(day =>
+            !day.isWeekend &&
+            !day.isHoliday &&
+            !day.isFutureDate &&
+            day.attendance
+        );
+
+        if (workingDays.length === 0) return 0;
+
+        const presentDays = workingDays.filter(day =>
+            day.attendance?.status === 'present'
+        ).length;
+
+        return Math.round((presentDays / workingDays.length) * 100);
+    };
+
+    const fetchCalendarData = async (year, month) => {
+        if (!studentId || !schoolBranch) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await apiService.get(
+                `attendance/student-calendar/${schoolBranch}/${studentId}/${year}/${month}`,
+            );
+
+            if (response.status === 200 && response.data && Array.isArray(response.data.calendar)) {
+                const calendarData = response.data.calendar;
+                setCalendarData(calendarData);
+                setMonthInfo(response.data.monthInfo || {});
+                setAttendanceStats(response.data.attendanceStats || {});
+
+                // Calculate attendance percentage
+                const percentage = calculateAttendancePercentage(calendarData);
+                setAttendancePercentage(percentage);
+            } else {
+                setCalendarData([]);
+                setMonthInfo({});
+                setAttendanceStats({});
+                setAttendancePercentage(0);
+            }
+        } catch (error) {
+            console.error('Error fetching calendar data:', error);
+            setCalendarData([]);
+            setAttendancePercentage(0);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth() + 1;
+        fetchCalendarData(year, month);
+    }, [currentMonth, studentId, schoolBranch]);
+
+    return (
+        <div className="max-w-sm mx-auto space-y-6">
+            <ProfileCard />
+            <CalendarCard
+                currentMonth={currentMonth}
+                onMonthChange={onMonthChange}
+                calendarData={calendarData}
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                loading={loading}
+                attendancePercentage={attendancePercentage}
+            />
+            <UpcomingTasksCard tasks={mockUpcomingTasks} />
+            <QuickActionsCard />
+        </div>
+    );
 };
 
 export default DashboardRightPanel;

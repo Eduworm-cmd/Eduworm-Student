@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
-import { Play, Search, BookOpen, ChevronLeft, ChevronRight, Frown, Filter, Grid3X3, List, Clock, Users, Star, Brain, ArrowRight, X, BarChart, TrendingUp, Sparkles } from 'lucide-react';
+import { Play, Search, BookOpen, Frown, Filter, Grid3X3, List, Clock, Users, Star, Brain, ArrowRight, X, BarChart, TrendingUp, Sparkles } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { apiService } from '../../api/apiService';
+import Loader from '../../Loader/Loader';
 
-// --- MOCK DATA (Unchanged) ---
 const mockQuizzes = [
   { _id: '1', title: 'Advanced JavaScript Mastery', description: 'Deep dive into ES6+, async patterns, closures, and modern JavaScript ecosystem.', avatar: 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop', subject: { title: 'JavaScript' }, difficulty: 'Advanced', duration: 45, questionsCount: 25, rating: 4.8, completions: 1240, category: 'Programming', tags: ['ES6', 'Async', 'Advanced'], createdAt: '2025-08-01T12:00:00Z' },
   { _id: '2', title: 'React Ecosystem Deep Dive', description: 'Master hooks, context, performance optimization, and modern React patterns.', avatar: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop', subject: { title: 'React' }, difficulty: 'Expert', duration: 60, questionsCount: 30, rating: 4.9, completions: 890, category: 'Frontend', tags: ['Hooks', 'Performance', 'Production'], createdAt: '2025-08-05T12:00:00Z' },
@@ -12,7 +14,6 @@ const mockQuizzes = [
 ];
 const featuredQuizId = '2'; // ID of the quiz to feature
 
-// --- OPTIMIZATION: Custom hook for typewriter effect ---
 const useTypewriter = (texts, options = {}) => {
   const { typingSpeed = 100, deletingSpeed = 50, pauseDuration = 2000 } = options;
   const [text, setText] = useState('');
@@ -46,7 +47,7 @@ const useTypewriter = (texts, options = {}) => {
 // --- UI COMPONENT: Hero Section ---
 const HeroSection = ({ featuredQuiz }) => {
   const typewriterText = useTypewriter(['Challenge Your Knowledge', 'Expand Your Skills', 'Master New Tech']);
-  
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mb-16 items-center">
       <div className="lg:col-span-3 text-center lg:text-left">
@@ -65,7 +66,7 @@ const HeroSection = ({ featuredQuiz }) => {
       <div className="lg:col-span-2">
         <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-xl shadow-blue-500/10 transform transition-transform duration-500 hover:scale-105 group relative">
           <div className="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 font-bold px-3 py-1 rounded-full text-xs transform rotate-6 flex items-center gap-1">
-            <Star size={12} fill="currentColor"/> Featured
+            <Star size={12} fill="currentColor" /> Featured
           </div>
           <div className="flex gap-4">
             <img src={featuredQuiz.avatar} alt={featuredQuiz.title} className="w-24 h-24 rounded-lg object-cover flex-shrink-0" />
@@ -90,7 +91,8 @@ const FilterBar = ({ onFilterChange, onSortChange, onLayoutChange, layout }) => 
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ subject: 'All', difficulty: 'All' });
   const [sortBy, setSortBy] = useState('popularity');
-  
+
+
   const subjects = ['All', 'JavaScript', 'React', 'CSS', 'Backend', 'AI/ML', 'Cloud'];
   const difficulties = ['All', 'Beginner', 'Intermediate', 'Advanced', 'Expert'];
   const sortOptions = [
@@ -139,13 +141,13 @@ const FilterBar = ({ onFilterChange, onSortChange, onLayoutChange, layout }) => 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm font-semibold text-gray-700 block mb-2">Category</label>
-            <select onChange={(e) => setFilters(f => ({...f, subject: e.target.value}))} className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select onChange={(e) => setFilters(f => ({ ...f, subject: e.target.value }))} className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
               {subjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>
             <label className="text-sm font-semibold text-gray-700 block mb-2">Difficulty</label>
-            <select onChange={(e) => setFilters(f => ({...f, difficulty: e.target.value}))} className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select onChange={(e) => setFilters(f => ({ ...f, difficulty: e.target.value }))} className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
               {difficulties.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
@@ -156,9 +158,8 @@ const FilterBar = ({ onFilterChange, onSortChange, onLayoutChange, layout }) => 
                 <button
                   key={opt.id}
                   onClick={() => setSortBy(opt.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg text-sm transition ${
-                    sortBy === opt.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg text-sm transition ${sortBy === opt.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                 >
                   <opt.icon size={14} /> {opt.name}
                 </button>
@@ -245,14 +246,58 @@ const QuizCard = memo(({ quiz, layout }) => {
 
 // --- MAIN INTERFACE COMPONENT ---
 const QuizInterface = () => {
-  const [allQuizzes] = useState(mockQuizzes);
+  const [allQuizzes, setAllQuizzes] = useState([]);
   const [filteredQuizzes, setFilteredQuizzes] = useState(allQuizzes);
   const [currentPage, setCurrentPage] = useState(1);
   const [layout, setLayout] = useState('grid');
-  
+  const [loading, setLoading] = useState(true);
+  const studentId = useSelector((state) => state.auth.user.studentId);
+
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        // setLoading(true);
+        const response = await apiService.get(`quize/student/${studentId}`);
+
+        if (response.data?.success && Array.isArray(response.data.data)) {
+          const formattedQuizzes = response.data.data.map((quiz) => ({
+            _id: quiz._id,
+            title: quiz.title,
+            avatar: quiz.avatar,
+            description: quiz.description,
+            subject: quiz.subject,
+            questions: quiz.questions,
+          }));
+
+          setAllQuizzes(formattedQuizzes);
+
+          const uniqueSubjects = [
+            'All',
+            ...new Set(
+              formattedQuizzes.map(
+                (q) => q.subject?.title || q.topic || 'General',
+              ),
+            ),
+          ];
+          setSubjects(uniqueSubjects.filter(Boolean));
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  }, [studentId]);
+
   const quizzesPerPage = layout === 'grid' ? 9 : 5;
   const featuredQuiz = useMemo(() => allQuizzes.find(q => q._id === featuredQuizId) || allQuizzes[0], [allQuizzes]);
 
+  console.log(featuredQuiz);
+  
   const handleFilterChange = (filters) => {
     setCurrentPage(1);
     let tempQuizzes = allQuizzes.filter(q =>
@@ -266,7 +311,7 @@ const QuizInterface = () => {
     }
     setFilteredQuizzes(tempQuizzes);
   };
-  
+
   const handleSortChange = (sortBy) => {
     setCurrentPage(1);
     const sorted = [...filteredQuizzes].sort((a, b) => {
@@ -277,7 +322,7 @@ const QuizInterface = () => {
     });
     setFilteredQuizzes(sorted);
   };
-  
+
   const currentQuizzes = useMemo(() => {
     const first = (currentPage - 1) * quizzesPerPage;
     const last = first + quizzesPerPage;
@@ -286,6 +331,10 @@ const QuizInterface = () => {
 
   const totalPages = Math.ceil(filteredQuizzes.length / quizzesPerPage);
 
+  if(loading){
+    return <Loader variant='spinner' message='loading'/>
+  }
+  // return false;
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-100/50 to-transparent -z-10" />
