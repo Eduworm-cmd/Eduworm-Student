@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Clock, User, BookOpen, Calendar, AlertCircle, Loader2 } from "lucide-react";
+import { Clock, User, BookOpen, Calendar, AlertCircle, Loader2, ChevronLeft, ChevronRight, MapPin, Bell } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { allTimeTable,getStudentById } from "../../api/AllApis";
@@ -43,18 +43,28 @@ export const TimeTable = () => {
     const [weekDays] = useState(() => generateWeekDays());
 
     const subjects = [
-        { name: 'Mathematics', color: 'bg-orange-100 text-orange-800 border-orange-200', icon: '🔢' },
-        { name: 'English', color: 'bg-red-100 text-red-800 border-red-200', icon: '📚' },
-        { name: 'Science', color: 'bg-cyan-100 text-cyan-800 border-cyan-200', icon: '🔬' },
-        { name: 'Hindi', color: 'bg-amber-100 text-amber-800 border-amber-200', icon: '🕉️' },
-        { name: 'History', color: 'bg-green-100 text-green-800 border-green-200', icon: '🏛️' },
-        { name: 'Geography', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: '🌍' },
-        { name: 'Physics', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: '⚛️' },
+        { name: 'Mathematics', color: 'from-orange-400 to-orange-600', bgColor: 'bg-orange-50', textColor: 'text-orange-700', icon: '🔢' },
+        { name: 'English', color: 'from-red-400 to-red-600', bgColor: 'bg-red-50', textColor: 'text-red-700', icon: '📚' },
+        { name: 'Science', color: 'from-cyan-400 to-cyan-600', bgColor: 'bg-cyan-50', textColor: 'text-cyan-700', icon: '🔬' },
+        { name: 'Hindi', color: 'from-amber-400 to-amber-600', bgColor: 'bg-amber-50', textColor: 'text-amber-700', icon: '🕉️' },
+        { name: 'History', color: 'from-green-400 to-green-600', bgColor: 'bg-green-50', textColor: 'text-green-700', icon: '🏛️' },
+        { name: 'Geography', color: 'from-blue-400 to-blue-600', bgColor: 'bg-blue-50', textColor: 'text-blue-700', icon: '🌍' },
+        { name: 'Physics', color: 'from-purple-400 to-purple-600', bgColor: 'bg-purple-50', textColor: 'text-purple-700', icon: '⚛️' },
     ];
 
     const getSubjectStyle = useCallback((subjectName) => {
         const subject = subjects.find((s) => s.name === subjectName);
-        return subject ? subject.color : 'bg-gray-100 text-gray-800 border-gray-200';
+        return subject ? subject.color : 'from-gray-400 to-gray-600';
+    }, []);
+
+    const getSubjectBgColor = useCallback((subjectName) => {
+        const subject = subjects.find((s) => s.name === subjectName);
+        return subject ? subject.bgColor : 'bg-gray-50';
+    }, []);
+
+    const getSubjectTextColor = useCallback((subjectName) => {
+        const subject = subjects.find((s) => s.name === subjectName);
+        return subject ? subject.textColor : 'text-gray-700';
     }, []);
 
     const getSubjectIcon = useCallback((subjectName) => {
@@ -173,159 +183,282 @@ export const TimeTable = () => {
         }
     }, [selectedDay, weekDays]);
 
-    const LessonCard = ({ lesson }) => (
+    const LessonCard = ({ lesson, index }) => (
         <div 
-            className={`${getSubjectStyle(lesson?.subject)} rounded-md border-2 p-3 hover:shadow-xl transition-all duration-300 cursor-pointer group min-h-[120px] transform hover:scale-105`}
+            className={`relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer group transform hover:-translate-y-2 hover:scale-105`}
             onClick={() => handleEdit(lesson._id)}
         >
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="text-2xl p-2 bg-white bg-opacity-50 rounded-full">
-                        {getSubjectIcon(lesson.subject)}
+            {/* Gradient overlay */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${getSubjectStyle(lesson?.subject)} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
+            
+            {/* Top accent bar */}
+            <div className={`h-1 bg-gradient-to-r ${getSubjectStyle(lesson?.subject)}`}></div>
+            
+            <div className="relative p-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-xl ${getSubjectBgColor(lesson.subject)} shadow-md`}>
+                            <span className="text-2xl">{getSubjectIcon(lesson.subject)}</span>
+                        </div>
+                        <div>
+                            <h3 className={`font-bold text-xl ${getSubjectTextColor(lesson.subject)}`}>
+                                {lesson.subject}
+                            </h3>
+                            <span className="text-sm font-medium text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full">
+                                {lesson.type}
+                            </span>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="font-bold text-lg">{lesson.subject}</h3>
-                        <span className="text-sm opacity-75 capitalize">{lesson.type}</span>
+                    <div className="text-right">
+                        <div className="text-xs text-gray-400 font-medium">Period {index + 1}</div>
                     </div>
                 </div>
-            </div>
 
-            <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                    <Clock className="w-4 h-4" />
-                    <span>{lesson.startTime} - {lesson.endTime}</span>
+                {/* Time and Teacher Info */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div className={`p-2 rounded-lg bg-gradient-to-r ${getSubjectStyle(lesson.subject)}`}>
+                            <Clock className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                            <div className="text-sm text-gray-600 font-medium">Time</div>
+                            <div className="font-bold text-gray-900">{lesson.startTime} - {lesson.endTime}</div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div className="p-2 rounded-lg bg-gray-200">
+                            <User className="w-4 h-4 text-gray-600" />
+                        </div>
+                        <div>
+                            <div className="text-sm text-gray-600 font-medium">Teacher</div>
+                            <div className="font-semibold text-gray-900 truncate">
+                                {lesson.teacher || 'Teacher TBA'}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                    <User className="w-4 h-4" />
-                    <span className="truncate">{lesson.teacher || 'Teacher TBA'}</span>
+
+                {/* Hover effect indicator */}
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="p-2 rounded-full bg-gray-100">
+                        <ChevronRight className="w-4 h-4 text-gray-600" />
+                    </div>
                 </div>
             </div>
         </div>
     );
 
     const EmptyState = () => (
-        <div className="text-center py-12">
-            <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Classes Today</h3>
-            <p className="text-gray-500">
-                {selectedDay ? `No classes scheduled for ${selectedDay.day}` : 'Select a day to view schedule'}
+        <div className="text-center py-16 px-8">
+            <div className="relative">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+                    <Calendar className="w-12 h-12 text-blue-500" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <Bell className="w-4 h-4 text-yellow-600" />
+                </div>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">No Classes Today</h3>
+            <p className="text-gray-600 max-w-md mx-auto">
+                {selectedDay ? `Enjoy your free time! No classes scheduled for ${selectedDay.day}` : 'Select a day to view your schedule'}
             </p>
+            <div className="mt-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                    <MapPin className="w-4 h-4" />
+                    <span>Take a break and recharge!</span>
+                </div>
+            </div>
         </div>
     );
 
     const LoadingState = () => (
-        <Loader variant="spinner" message="loading"/>
+        <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+                <div className="relative">
+                    <div className="w-16 h-16 mx-auto mb-4 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                </div>
+                <p className="text-gray-600 font-medium">Loading your schedule...</p>
+            </div>
+        </div>
+    );
+
+    const WeekDayCard = ({ day, isSelected, onClick }) => (
+        <div
+            onClick={onClick}
+            className={`relative overflow-hidden rounded-2xl p-4 cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                isSelected
+                    ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
+                    : day.isToday
+                    ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
+            }`}
+        >
+            {/* Background pattern for selected day */}
+            {isSelected && (
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-2 right-2 w-8 h-8 border-2 border-white rounded-full"></div>
+                    <div className="absolute bottom-2 left-2 w-4 h-4 border border-white rounded-full"></div>
+                </div>
+            )}
+            
+            <div className="relative z-10 text-center">
+                <div className={`text-xs font-semibold mb-2 ${
+                    isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-600' : 'text-gray-500'
+                }`}>
+                    {day.isToday ? 'TODAY' : day.day.toUpperCase()}
+                </div>
+                <div className={`text-3xl font-bold mb-1 ${
+                    isSelected ? 'text-white' : 'text-gray-900'
+                }`}>
+                    {day.date}
+                </div>
+                <div className={`text-sm font-medium ${
+                    isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-700' : 'text-gray-600'
+                }`}>
+                    {day.day}
+                </div>
+            </div>
+        </div>
     );
 
     return (
-        <div className="max-w-8xl mx-auto w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-auto p-1">
-            <div className="bg-white rounded-sm shadow-sm p-4 mb-6">
-                <div className="md:flex flex-row items-center justify-between mb-2">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-blue-100 rounded-sm">
-                            <Calendar className="w-8 h-8 text-blue-600" />
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Header Section */}
+                <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                            <div className="relative">
+                                <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
+                                    <Calendar className="w-8 h-8 text-white" />
+                                </div>
+                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                                    <span className="text-xs font-bold text-white">📚</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2">My Timetable</h1>
+                                <p className="text-gray-600 text-lg">
+                                    {studentData?.name ? `${studentData.name}'s weekly schedule` : 'Manage your class schedule'}
+                                </p>
+                                {studentData?.class && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                            Class {studentData.class.name}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                        {isLoading && (
+                            <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 rounded-full">
+                                <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                                <span className="text-blue-700 font-medium">Loading schedule...</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Week Days Navigation */}
+                    <div className="mt-8">
+                        <div className="grid grid-cols-5 gap-4">
+                            {weekDays.map((day, index) => (
+                                <WeekDayCard
+                                    key={index}
+                                    day={day}
+                                    isSelected={selectedDay?.dayFull === day.dayFull}
+                                    onClick={() => setSelectedDay(day)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Current Day Schedule */}
+                <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                            <BookOpen className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900">Timetable</h1>
+                            <h2 className="text-2xl font-bold text-gray-900">
+                                {selectedDay ? `${selectedDay.day}'s Schedule` : "Today's Schedule"}
+                            </h2>
                             <p className="text-gray-600">
-                                {studentData?.name ? `${studentData.name}'s schedule` : 'Manage your class schedule'}
+                                {getCurrentDayPeriods().length} classes scheduled
                             </p>
                         </div>
                     </div>
-                    {isLoading && (
-                        <div className="flex items-center gap-2 text-blue-600">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm">Loading...</span>
+
+                    {isLoading ? (
+                        <LoadingState />
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {getCurrentDayPeriods().length > 0 ? (
+                                getCurrentDayPeriods().map((period, index) => (
+                                    <LessonCard key={`${period._id || index}`} lesson={period} index={index} />
+                                ))
+                            ) : (
+                                <div className="col-span-full">
+                                    <EmptyState />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
 
-                {/* Week Days Header */}
-                <div className="grid grid-cols-5 gap-4 mb-8 bg-gray-100 p-2 rounded-md">
-                    {weekDays.map((day, index) => (
-                        <div
-                            key={index}
-                            onClick={() => setSelectedDay(day)}
-                            className={`text-center p-2 rounded-md transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                                selectedDay?.dayFull === day.dayFull
-                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                                    : day.isToday
-                                    ? 'bg-blue-100 text-blue-800 border-2 border-blue-200'
-                                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            <div className="text-xs font-medium mb-2 opacity-75">
-                                {day.isToday ? 'Today' : day.day}
-                            </div>
-                            <div className="text-2xl font-bold mb-1">{day.date}</div>
-                            <div className="text-sm font-medium">{day.day}</div>
+                {/* All Subjects Overview */}
+                <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                            <BookOpen className="w-6 h-6 text-white" />
                         </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Current Day Schedule */}
-            <div className="bg-white rounded-md shadow-md p-4 mt-3">
-                <div className="flex items-center gap-3 mb-6">
-                    <BookOpen className="w-6 h-6 text-blue-600" />
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        {selectedDay ? `${selectedDay.day}'s Schedule` : "Today's Schedule"}
-                    </h2>
-                </div>
-
-                {isLoading ? (
-                    <LoadingState />
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {getCurrentDayPeriods().length > 0 ? (
-                            getCurrentDayPeriods().map((period, index) => (
-                                <LessonCard key={`${period._id || index}`} lesson={period} />
-                            ))
-                        ) : (
-                            <div className="col-span-full">
-                                <EmptyState />
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* All Subjects */}
-            <div className="bg-white rounded-md shadow-md p-4 mt-5">
-                <div className="flex items-center gap-3 mb-6">
-                    <BookOpen className="w-6 h-6 text-purple-600" />
-                    <h2 className="text-2xl font-bold text-gray-900">All Subjects</h2>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-                    {subjects.map((subject, index) => (
-                        <div
-                            key={index}
-                            className={`${subject.color} rounded-xl border-2 p-4 text-center hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer`}
-                        >
-                            <div className="text-3xl mb-2">{subject.icon}</div>
-                            <div className="text-sm font-semibold">{subject.name}</div>
-                        </div>
-                    ))}
-                </div>
-
-                {allSubjects.length > 0 && (
-                    <div className="mt-8">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                            Subjects in Current Timetable
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {allSubjects.map((subject, index) => (
-                                <span
-                                    key={index}
-                                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                                >
-                                    {subject}
-                                </span>
-                            ))}
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900">Subject Overview</h2>
+                            <p className="text-gray-600">All subjects in your curriculum</p>
                         </div>
                     </div>
-                )}
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+                        {subjects.map((subject, index) => (
+                            <div
+                                key={index}
+                                className={`group relative overflow-hidden rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border-2 border-gray-200 hover:border-transparent`}
+                            >
+                                <div className={`absolute inset-0 bg-gradient-to-br ${subject.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                                <div className="relative z-10">
+                                    <div className="text-4xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
+                                        {subject.icon}
+                                    </div>
+                                    <div className="font-bold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
+                                        {subject.name}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {allSubjects.length > 0 && (
+                        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                Current Timetable Subjects
+                            </h3>
+                            <div className="flex flex-wrap gap-3">
+                                {allSubjects.map((subject, index) => (
+                                    <span
+                                        key={index}
+                                        className="px-4 py-2 bg-white text-blue-700 rounded-full text-sm font-semibold shadow-sm border border-blue-200 hover:shadow-md transition-shadow duration-300"
+                                    >
+                                        {subject}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
