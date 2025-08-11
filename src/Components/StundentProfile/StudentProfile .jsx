@@ -1,641 +1,717 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Camera,
-  Heart,
   BookOpen,
   Users,
   User,
-  EllipsisVertical,
+  MoreVertical,
   Loader2,
   Calendar,
-  Award,
-  Star,
   TrendingUp,
-  MapPin,
-  Phone,
-  Mail,
   Shield,
-  GraduationCap,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Sparkles,
   Edit3,
-  Settings,
-  Bell,
   Download,
   Share2,
+  ChevronDown,
+  Activity,
+  Target,
+  Award,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  GraduationCap,
+  FileText,
+  Settings,
+  Bell,
+  Search,
+  Filter,
+  BarChart3,
+  PieChart,
+  Calendar as CalendarIcon,
+  Briefcase
 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { apiService } from '../../api/apiService';
-import ChangePasswordModal from './ChangePasswordModal';
-import { motion, AnimatePresence } from 'framer-motion';
+
+// Mock data for demonstration
+const mockStudentData = {
+  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+  name: 'Alexander Chen',
+  class: 'Computer Science - Year 12',
+  rollNo: 'CS2024-047',
+  adharNo: '4532 8901 2345',
+  academicYear: '2024-2025',
+  admissionClass: 'Year 11',
+  oldAdmissionNo: 'ADCS240047',
+  dateOfAdmission: '15 August, 2023',
+  dateOfBirth: '23 March, 2007',
+  parentEmail: 'chen.parents@email.com',
+  motherName: 'Linda Chen',
+  fatherName: 'David Chen',
+  schoolName: 'Metropolitan Academy of Sciences',
+  schoolBranch: 'North Campus',
+  bloodGroup: 'A+',
+  uniqueId: 'MAS2024047',
+  gender: 'Male',
+  emergencyContact: {
+    name: 'Dr. Sarah Chen',
+    phone: '+1 (555) 234-5678',
+    relationship: 'Aunt'
+  },
+  enrollmentStatus: 'Active',
+  gpa: 3.87,
+  rank: 12,
+  totalStudents: 156
+};
+
+const mockAttendanceData = {
+  totalWorkingDays: 187,
+  presentDays: 172,
+  absentDays: 12,
+  attendancePercentage: 92.0,
+  halfDays: 2,
+  leaveDays: 1,
+  notMarkedDays: 0
+};
 
 export default function StudentProfile() {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeView, setActiveView] = useState('dashboard');
   const [studentData, setStudentData] = useState(null);
+  const [attendanceData, setAttendanceData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [attendenceData, setAttendenceData] = useState(null);
-  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const studentId = useSelector((state) => state.auth.user.studentId);
-  const branchId = useSelector((state) => state.auth.user.branchId);
-
-  const fetchAttendenceData = async () => {
-    try {
-      const response = await apiService.get(
-        `attendance/student-calendar/${branchId}/${studentId}/2025/7`,
-      );
-
-      if (response.success) {
-        const data = response.data;
-        setAttendenceData(data);
-      } else {
-        console.error('Failed to fetch attendance data:', response.error);
-      }
-    } catch (error) {
-      console.error('Error fetching attendance data:', error);
-    }
-  };
-
-  const fetchStudentData = async () => {
-    try {
-      setLoading(true);
-      const response = await apiService.get(`superStudent/ById/${studentId}`);
-
-      if (response.success) {
-        const data = response.data;
-        const motherData = data.student.parents.find(
-          (p) => p.relationship === 'mom',
-        );
-        const fatherData = data.student.parents.find(
-          (p) => p.relationship === 'dad',
-        );
-
-        const transformedData = {
-          avatar: data.student.avatar,
-          name: `${data.student.firstName} ${data.student.lastName}`,
-          class: data.student.class.className,
-          rollNo: data.student.rollNo,
-          adharNo: data.student.documents.aadharCard || 'Not provided',
-          academicYear:
-            new Date(data.student.dateOfJoining).getFullYear() +
-            '-' +
-            (new Date(data.student.dateOfJoining).getFullYear() + 1),
-          admissionClass: data.student.class.className,
-          oldAdmissionNo: data.student.admissionNumber,
-          dateOfAdmission: new Date(
-            data.student.dateOfJoining,
-          ).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-          }),
-          dateOfBirth: new Date(data.student.dateOfBirth).toLocaleDateString(
-            'en-GB',
-            {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-            },
-          ),
-          parentEmail: data.student.parents[0]?.email || 'Not provided',
-          motherName: motherData
-            ? `${motherData.firstName} ${motherData.lastName}`
-            : 'Not provided',
-          fatherName: fatherData
-            ? `${fatherData.firstName} ${fatherData.lastName}`
-            : 'Not provided',
-          schoolName: data.student.school.schoolName,
-          schoolBranch: data.student.schoolBranch.name,
-          bloodGroup: data.student.bloodGroup,
-          uniqueId: data.student.uniqueId,
-          gender: data.student.gender,
-          emergencyContact: data.student.emergencyContact,
-          enrollmentStatus: data.student.enrollmentStatus,
-        };
-
-        setStudentData(transformedData);
-      } else {
-        setError('Failed to fetch student data');
-      }
-    } catch (err) {
-      setError('Error connecting to server');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Simulate data loading
   useEffect(() => {
-    fetchStudentData();
-    fetchAttendenceData();
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        setStudentData(mockStudentData);
+        setAttendanceData(mockAttendanceData);
+      } catch (err) {
+        setError('Failed to load profile data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white flex items-center justify-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Loader2 className="w-10 h-10 text-white animate-spin" />
-          </div>
-          <p className="text-gray-600 font-medium text-lg">Loading student profile...</p>
-        </motion.div>
-      </div>
-    );
-  }
+  const performanceMetrics = useMemo(() => {
+    if (!attendanceData) return [];
+    
+    const { totalWorkingDays, presentDays, attendancePercentage } = attendanceData;
+    
+    return [
+      {
+        title: 'Attendance Rate',
+        value: `${attendancePercentage}%`,
+        change: '+2.3%',
+        trend: 'up',
+        icon: Calendar,
+        color: 'emerald'
+      },
+      {
+        title: 'Academic Performance',
+        value: `${studentData?.gpa || 0}`,
+        change: '+0.12',
+        trend: 'up',
+        icon: TrendingUp,
+        color: 'blue'
+      },
+      {
+        title: 'Class Ranking',
+        value: `#${studentData?.rank || 0}`,
+        change: '+3',
+        trend: 'up',
+        icon: Award,
+        color: 'amber'
+      },
+      {
+        title: 'Participation',
+        value: '94%',
+        change: '-1.2%',
+        trend: 'down',
+        icon: Activity,
+        color: 'purple'
+      }
+    ];
+  }, [attendanceData, studentData]);
 
-  const {
-    totalWorkingDays,
-    presentDays,
-    absentDays,
-    attendancePercentage,
-    halfDays,
-    leaveDays,
-    notMarkedDays,
-  } = attendenceData?.attendanceStats || {};
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertCircle className="w-10 h-10 text-white" />
-          </div>
-          <p className="text-red-600 font-medium text-lg mb-4">{error}</p>
-          <button
-            onClick={fetchStudentData}
-            className="bg-red-500 text-white px-6 py-3 rounded-xl hover:bg-red-600 transition-colors font-medium"
-          >
-            Try Again
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} onRetry={() => window.location.reload()} />;
   if (!studentData) return null;
 
-  const attendanceStats = [
-    {
-      label: 'Total Working Days',
-      value: totalWorkingDays || 0,
-      icon: Calendar,
-      color: 'from-blue-500 to-cyan-500',
-      bgColor: 'bg-blue-50',
-    },
-    {
-      label: 'Present Days',
-      value: presentDays || 0,
-      icon: CheckCircle,
-      color: 'from-green-500 to-emerald-500',
-      bgColor: 'bg-green-50',
-    },
-    {
-      label: 'Absent Days',
-      value: absentDays || 0,
-      icon: AlertCircle,
-      color: 'from-red-500 to-pink-500',
-      bgColor: 'bg-red-50',
-    },
-    {
-      label: 'Attendance %',
-      value: `${attendancePercentage || 0}%`,
-      icon: TrendingUp,
-      color: 'from-purple-500 to-pink-500',
-      bgColor: 'bg-purple-50',
-    },
-    {
-      label: 'Half Days',
-      value: halfDays || 0,
-      icon: Clock,
-      color: 'from-orange-500 to-red-500',
-      bgColor: 'bg-orange-50',
-    },
-    {
-      label: 'Leave Days',
-      value: leaveDays || 0,
-      icon: Award,
-      color: 'from-yellow-500 to-orange-500',
-      bgColor: 'bg-yellow-50',
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white">
-      <ChangePasswordModal
-        isOpen={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-        studentId={studentId}
-        parentEmail={studentData?.parentEmail}
-      />
-
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <User className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-800">Student Profile</h1>
-              <p className="text-slate-600">Manage your academic information and settings</p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Main Profile Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden"
-        >
-          {/* Profile Header */}
-          <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16"></div>
-            
-            <div className="relative z-10 flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center border-4 border-white/30 shadow-2xl overflow-hidden bg-white/20 backdrop-blur-sm">
-                    <img
-                      src={
-                        studentData.avatar ||
-                        'https://cdn-icons-png.flaticon.com/256/209/209076.png'
-                      }
-                      alt={studentData.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg hover:bg-white transition-colors">
-                    <Camera className="w-5 h-5 text-blue-600" />
-                  </button>
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Navigation Bar */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-white" />
                 </div>
-
-                <div className="text-white">
-                  <h2 className="text-3xl font-bold mb-2">{studentData.name}</h2>
-                  <div className="flex items-center space-x-4">
-                    <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-medium">
-                      {studentData.class}
-                    </span>
-                    <span className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-medium">
-                      Roll: {studentData.rollNo}
-                    </span>
-                  </div>
-                </div>
+                <span className="text-xl font-semibold text-slate-900">Academy Portal</span>
               </div>
+              
+              <div className="hidden md:flex items-center space-x-6">
+                {[
+                  { id: 'dashboard', label: 'Dashboard' },
+                  { id: 'profile', label: 'Profile' },
+                  { id: 'academics', label: 'Academics' },
+                  { id: 'analytics', label: 'Analytics' }
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveView(item.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeView === item.id 
+                        ? 'bg-slate-900 text-white' 
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
+            <div className="flex items-center space-x-3">
+              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                <Search className="w-5 h-5" />
+              </button>
+              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors relative">
+                <Bell className="w-5 h-5" />
+                <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+              </button>
               <div className="relative">
                 <button
-                  onClick={() => setShowDropdown((prev) => !prev)}
-                  className="p-3 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-colors"
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-100 transition-colors"
                 >
-                  <EllipsisVertical className="w-6 h-6 text-white" />
+                  <img
+                    src={studentData.avatar}
+                    alt={studentData.name}
+                    className="w-8 h-8 rounded-lg object-cover"
+                  />
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
                 </button>
-
-                <AnimatePresence>
-                  {showDropdown && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 z-50"
-                    >
-                      <button
-                        onClick={() => {
-                          setShowChangePassword(true);
-                          setShowDropdown(false);
-                        }}
-                        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100/50 transition-colors rounded-t-2xl"
-                      >
-                        <Shield className="w-4 h-4 inline mr-2" />
-                        Change Password
-                      </button>
-                      <button className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100/50 transition-colors">
-                        <Edit3 className="w-4 h-4 inline mr-2" />
-                        Edit Profile
-                      </button>
-                      <button className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100/50 transition-colors rounded-b-2xl">
-                        <Download className="w-4 h-4 inline mr-2" />
-                        Download Profile
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+                    <div className="px-4 py-3 border-b border-slate-100">
+                      <p className="font-medium text-slate-900">{studentData.name}</p>
+                      <p className="text-sm text-slate-500">{studentData.parentEmail}</p>
+                    </div>
+                    <div className="py-2">
+                      <ProfileMenuItem icon={Settings} label="Account Settings" />
+                      <ProfileMenuItem icon={Shield} label="Privacy & Security" />
+                      <ProfileMenuItem icon={Download} label="Export Data" />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        </div>
+      </nav>
 
-          {/* Tab Navigation */}
-          <div className="bg-gray-50/50 px-6 py-4">
-            <div className="flex space-x-2 overflow-x-auto">
-              {[
-                { id: 'profile', label: '👤 Profile', icon: User },
-                { id: 'academic', label: '📖 Academic', icon: BookOpen },
-                { id: 'family', label: '👨‍👩‍👧‍👦 Family', icon: Users },
-                { id: 'attendance', label: '📊 Attendance', icon: TrendingUp },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:bg-white hover:shadow-sm'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-6 md:p-8">
-            <AnimatePresence mode="wait">
-              {activeTab === 'profile' && (
-                <motion.div
-                  key="profile"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InfoCard
-                      icon="🆔"
-                      title="Aadhaar Number"
-                      value={studentData.adharNo}
-                      bgColor="bg-blue-50"
-                      borderColor="border-blue-200"
-                    />
-                    <InfoCard
-                      icon="🎂"
-                      title="Date of Birth"
-                      value={studentData.dateOfBirth}
-                      bgColor="bg-pink-50"
-                      borderColor="border-pink-200"
-                    />
-                    <InfoCard
-                      icon="🔢"
-                      title="Unique ID"
-                      value={studentData.uniqueId}
-                      bgColor="bg-green-50"
-                      borderColor="border-green-200"
-                    />
-                    <InfoCard
-                      icon="⚕️"
-                      title="Blood Group"
-                      value={studentData.bloodGroup}
-                      bgColor="bg-red-50"
-                      borderColor="border-red-200"
-                    />
-                    <InfoCard
-                      icon="👤"
-                      title="Gender"
-                      value={studentData.gender}
-                      bgColor="bg-purple-50"
-                      borderColor="border-purple-200"
-                    />
-                    <InfoCard
-                      icon="📋"
-                      title="Enrollment Status"
-                      value={studentData.enrollmentStatus}
-                      bgColor="bg-yellow-50"
-                      borderColor="border-yellow-200"
-                    />
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'academic' && (
-                <motion.div
-                  key="academic"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InfoCard
-                      icon="📅"
-                      title="Academic Year"
-                      value={studentData.academicYear}
-                      bgColor="bg-green-50"
-                      borderColor="border-green-200"
-                    />
-                    <InfoCard
-                      icon="🎒"
-                      title="Admission Class"
-                      value={studentData.admissionClass}
-                      bgColor="bg-yellow-50"
-                      borderColor="border-yellow-200"
-                    />
-                    <InfoCard
-                      icon="📝"
-                      title="Admission Number"
-                      value={studentData.oldAdmissionNo}
-                      bgColor="bg-purple-50"
-                      borderColor="border-purple-200"
-                    />
-                    <InfoCard
-                      icon="📆"
-                      title="Date of Admission"
-                      value={studentData.dateOfAdmission}
-                      bgColor="bg-orange-50"
-                      borderColor="border-orange-200"
-                    />
-                    <InfoCard
-                      icon="🏫"
-                      title="School Name"
-                      value={studentData.schoolName}
-                      bgColor="bg-blue-50"
-                      borderColor="border-blue-200"
-                      fullWidth={true}
-                    />
-                    <InfoCard
-                      icon="🏢"
-                      title="School Branch"
-                      value={studentData.schoolBranch}
-                      bgColor="bg-indigo-50"
-                      borderColor="border-indigo-200"
-                    />
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'family' && (
-                <motion.div
-                  key="family"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <InfoCard
-                    icon="📧"
-                    title="Parent Email ID"
-                    value={studentData.parentEmail}
-                    bgColor="bg-blue-50"
-                    borderColor="border-blue-200"
-                    fullWidth={true}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InfoCard
-                      icon="👩"
-                      title="Mother's Name"
-                      value={studentData.motherName}
-                      bgColor="bg-pink-50"
-                      borderColor="border-pink-200"
-                    />
-                    <InfoCard
-                      icon="👨"
-                      title="Father's Name"
-                      value={studentData.fatherName}
-                      bgColor="bg-blue-50"
-                      borderColor="border-blue-200"
-                    />
-                  </div>
-                  {studentData.emergencyContact && (
-                    <div className="mt-6">
-                      <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        🆘 Emergency Contact
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InfoCard
-                          icon="👤"
-                          title="Contact Name"
-                          value={studentData.emergencyContact.name}
-                          bgColor="bg-red-50"
-                          borderColor="border-red-200"
-                        />
-                        <InfoCard
-                          icon="📞"
-                          title="Contact Phone"
-                          value={studentData.emergencyContact.phone}
-                          bgColor="bg-red-50"
-                          borderColor="border-red-200"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {activeTab === 'attendance' && (
-                <motion.div
-                  key="attendance"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                      📊 Attendance Summary
-                    </h3>
-                    <p className="text-gray-600">Your academic performance overview</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    {attendanceStats.map((stat, index) => (
-                      <motion.div
-                        key={stat.label}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`${stat.bgColor} rounded-2xl p-6 border ${stat.borderColor} hover:shadow-lg transition-all`}
-                      >
-                        <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md mb-3`}>
-                          <stat.icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="text-2xl font-bold text-gray-800 mb-1">{stat.value}</div>
-                        <div className="text-sm text-gray-600">{stat.label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {notMarkedDays > 0 && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
-                      <div className="flex items-center">
-                        <AlertCircle className="w-6 h-6 text-yellow-600 mr-3" />
-                        <div>
-                          <h4 className="font-semibold text-yellow-800">Not Marked Days</h4>
-                          <p className="text-yellow-700 text-sm">{notMarkedDays} days have not been marked for attendance</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-
-        {/* Fun Facts Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl p-8 border border-slate-200/50"
-        >
-          <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-            <Heart className="w-6 h-6 text-red-500 mr-3" />
-            Fun Facts About Me! 🌟
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <FunFactCard emoji="🎨" title="Favorite Color" value="Rainbow" />
-            <FunFactCard emoji="🦄" title="Favorite Animal" value="Unicorn" />
-            <FunFactCard emoji="🎵" title="Loves" value="Singing" />
-            <FunFactCard emoji="⭐" title="Dream" value="Astronaut" />
-          </div>
-        </motion.div>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {activeView === 'dashboard' && <DashboardView studentData={studentData} performanceMetrics={performanceMetrics} attendanceData={attendanceData} />}
+        {activeView === 'profile' && <ProfileView studentData={studentData} />}
+        {activeView === 'academics' && <AcademicsView studentData={studentData} />}
+        {activeView === 'analytics' && <AnalyticsView attendanceData={attendanceData} performanceMetrics={performanceMetrics} />}
       </div>
     </div>
   );
 }
 
-function InfoCard({ icon, title, value, bgColor, borderColor, fullWidth = false }) {
+function LoadingState() {
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className={`${bgColor} ${fullWidth ? 'col-span-full' : ''} rounded-2xl p-6 border ${borderColor} hover:shadow-lg transition-all`}
-    >
-      <div className="flex items-start space-x-4">
-        <div className="text-3xl">{icon}</div>
-        <div className="flex-1">
-          <h4 className="text-sm font-medium text-gray-600 mb-2">{title}</h4>
-          <p className="text-gray-800 font-semibold break-words">{value}</p>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
         </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">Loading Profile</h3>
+        <p className="text-slate-500">Fetching your academic data...</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-function FunFactCard({ emoji, title, value }) {
+function ErrorState({ error, onRetry }) {
   return (
-    <motion.div 
-      whileHover={{ scale: 1.05 }}
-      className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 text-center hover:shadow-lg transition-all cursor-pointer border border-purple-200"
-    >
-      <div className="text-4xl mb-3">{emoji}</div>
-      <h4 className="text-sm font-medium text-gray-600 mb-2">{title}</h4>
-      <p className="text-sm font-bold text-gray-800">{value}</p>
-    </motion.div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 bg-red-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+          <XCircle className="w-8 h-8 text-white" />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">Connection Error</h3>
+        <p className="text-slate-500 mb-6">{error}</p>
+        <button
+          onClick={onRetry}
+          className="bg-slate-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors"
+        >
+          Retry Connection
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProfileMenuItem({ icon: Icon, label }) {
+  return (
+    <button className="w-full flex items-center space-x-3 px-4 py-2 text-left text-slate-700 hover:bg-slate-50 transition-colors">
+      <Icon className="w-4 h-4" />
+      <span className="text-sm">{label}</span>
+    </button>
+  );
+}
+
+function DashboardView({ studentData, performanceMetrics, attendanceData }) {
+  return (
+    <div className="space-y-8">
+      {/* Student Header Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-700 px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="relative">
+                <img
+                  src={studentData.avatar}
+                  alt={studentData.name}
+                  className="w-20 h-20 rounded-xl object-cover border-2 border-white/20"
+                />
+                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors">
+                  <Camera className="w-4 h-4 text-white" />
+                </button>
+              </div>
+              <div className="text-white">
+                <h1 className="text-2xl font-bold mb-1">{studentData.name}</h1>
+                <p className="text-slate-300 mb-3">{studentData.class} • Roll #{studentData.rollNo}</p>
+                <div className="flex items-center space-x-4 text-sm">
+                  <span className="flex items-center space-x-1">
+                    <Building className="w-4 h-4" />
+                    <span>{studentData.schoolBranch}</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <CalendarIcon className="w-4 h-4" />
+                    <span>{studentData.academicYear}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="text-right text-white">
+              <div className="text-3xl font-bold">{studentData.gpa}</div>
+              <div className="text-slate-300 text-sm">Current GPA</div>
+              <div className="text-xs text-slate-400 mt-1">Rank #{studentData.rank} of {studentData.totalStudents}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Performance Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {performanceMetrics.map((metric, index) => (
+          <MetricCard key={index} metric={metric} />
+        ))}
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <AttendanceChart attendanceData={attendanceData} />
+          <RecentActivity />
+        </div>
+        <div className="space-y-6">
+          <QuickActions />
+          <UpcomingEvents />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MetricCard({ metric }) {
+  const Icon = metric.icon;
+  const isPositive = metric.trend === 'up';
+  
+  const colorClasses = {
+    emerald: 'from-emerald-500 to-emerald-600',
+    blue: 'from-blue-500 to-blue-600',
+    amber: 'from-amber-500 to-amber-600',
+    purple: 'from-purple-500 to-purple-600'
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-12 h-12 bg-gradient-to-r ${colorClasses[metric.color]} rounded-lg flex items-center justify-center`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+        <div className={`flex items-center space-x-1 text-xs font-medium px-2 py-1 rounded-full ${
+          isPositive ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'
+        }`}>
+          <TrendingUp className={`w-3 h-3 ${isPositive ? '' : 'rotate-180'}`} />
+          <span>{metric.change}</span>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div className="text-2xl font-bold text-slate-900">{metric.value}</div>
+        <div className="text-sm text-slate-500">{metric.title}</div>
+      </div>
+    </div>
+  );
+}
+
+function AttendanceChart({ attendanceData }) {
+  const { presentDays, absentDays, totalWorkingDays } = attendanceData;
+  const attendanceRate = Math.round((presentDays / totalWorkingDays) * 100);
+  
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-slate-900">Attendance Overview</h3>
+        <div className="flex items-center space-x-2">
+          <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+            <BarChart3 className="w-4 h-4" />
+          </button>
+          <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+            <Filter className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-6 mb-6">
+        <div className="text-center">
+          <div className="text-3xl font-bold text-emerald-600">{presentDays}</div>
+          <div className="text-sm text-slate-500">Present Days</div>
+        </div>
+        <div className="text-center">
+          <div className="text-3xl font-bold text-red-500">{absentDays}</div>
+          <div className="text-sm text-slate-500">Absent Days</div>
+        </div>
+        <div className="text-center">
+          <div className="text-3xl font-bold text-slate-900">{attendanceRate}%</div>
+          <div className="text-sm text-slate-500">Overall Rate</div>
+        </div>
+      </div>
+      
+      {/* Progress Bar */}
+      <div className="space-y-3">
+        <div className="flex justify-between text-sm text-slate-600">
+          <span>Attendance Progress</span>
+          <span>{attendanceRate}% Complete</span>
+        </div>
+        <div className="w-full bg-slate-200 rounded-full h-3">
+          <div 
+            className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full transition-all duration-1000"
+            style={{ width: `${attendanceRate}%` }}
+          ></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecentActivity() {
+  const activities = [
+    { type: 'assignment', title: 'Mathematics Assignment Submitted', time: '2 hours ago', status: 'completed' },
+    { type: 'exam', title: 'Physics Mid-term Scheduled', time: '1 day ago', status: 'upcoming' },
+    { type: 'attendance', title: 'Present - Chemistry Lab', time: '2 days ago', status: 'present' },
+    { type: 'grade', title: 'English Essay Graded: A-', time: '3 days ago', status: 'graded' }
+  ];
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Recent Activity</h3>
+      <div className="space-y-4">
+        {activities.map((activity, index) => (
+          <div key={index} className="flex items-start space-x-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+            <div className={`w-2 h-2 rounded-full mt-2 ${
+              activity.status === 'completed' ? 'bg-emerald-500' :
+              activity.status === 'upcoming' ? 'bg-blue-500' :
+              activity.status === 'present' ? 'bg-green-500' : 'bg-amber-500'
+            }`}></div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-900">{activity.title}</p>
+              <p className="text-xs text-slate-500">{activity.time}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function QuickActions() {
+  const actions = [
+    { icon: FileText, label: 'Download Transcript', color: 'bg-blue-500' },
+    { icon: Mail, label: 'Contact Advisor', color: 'bg-emerald-500' },
+    { icon: Calendar, label: 'Schedule Meeting', color: 'bg-purple-500' },
+    { icon: Settings, label: 'Update Profile', color: 'bg-slate-500' }
+  ];
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Quick Actions</h3>
+      <div className="grid grid-cols-2 gap-3">
+        {actions.map((action, index) => {
+          const Icon = action.icon;
+          return (
+            <button
+              key={index}
+              className="flex flex-col items-center p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all group"
+            >
+              <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xs font-medium text-slate-700 text-center">{action.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function UpcomingEvents() {
+  const events = [
+    { title: 'Physics Practical Exam', date: 'Aug 15', type: 'exam' },
+    { title: 'Parent-Teacher Conference', date: 'Aug 18', type: 'meeting' },
+    { title: 'Science Fair Presentation', date: 'Aug 22', type: 'event' }
+  ];
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Upcoming Events</h3>
+      <div className="space-y-4">
+        {events.map((event, index) => (
+          <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-slate-100">
+            <div>
+              <p className="text-sm font-medium text-slate-900">{event.title}</p>
+              <p className="text-xs text-slate-500">{event.date}</p>
+            </div>
+            <div className={`w-3 h-3 rounded-full ${
+              event.type === 'exam' ? 'bg-red-400' :
+              event.type === 'meeting' ? 'bg-blue-400' : 'bg-green-400'
+            }`}></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfileView({ studentData }) {
+  const personalInfo = [
+    { label: 'Full Name', value: studentData.name, icon: User },
+    { label: 'Date of Birth', value: studentData.dateOfBirth, icon: Calendar },
+    { label: 'Gender', value: studentData.gender, icon: User },
+    { label: 'Blood Group', value: studentData.bloodGroup, icon: Activity },
+    { label: 'Aadhaar Number', value: studentData.adharNo, icon: FileText },
+    { label: 'Unique ID', value: studentData.uniqueId, icon: Target }
+  ];
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-slate-900">Personal Information</h2>
+        <button className="flex items-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <Edit3 className="w-4 h-4" />
+          <span>Edit Profile</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {personalInfo.map((info, index) => (
+          <DataField key={index} {...info} />
+        ))}
+      </div>
+
+      <ContactInformation studentData={studentData} />
+    </div>
+  );
+}
+
+function AcademicsView({ studentData }) {
+  const academicInfo = [
+    { label: 'Current Class', value: studentData.class, icon: GraduationCap },
+    { label: 'Roll Number', value: studentData.rollNo, icon: FileText },
+    { label: 'Admission Number', value: studentData.oldAdmissionNo, icon: FileText },
+    { label: 'Academic Year', value: studentData.academicYear, icon: Calendar },
+    { label: 'Date of Admission', value: studentData.dateOfAdmission, icon: Calendar },
+    { label: 'Enrollment Status', value: studentData.enrollmentStatus, icon: CheckCircle }
+  ];
+
+  return (
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-slate-900">Academic Information</h2>
+      
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-6">Institution Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DataField 
+            label="School Name" 
+            value={studentData.schoolName} 
+            icon={Building}
+            fullWidth
+          />
+          <DataField 
+            label="Campus Branch" 
+            value={studentData.schoolBranch} 
+            icon={MapPin} 
+          />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-6">Student Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {academicInfo.map((info, index) => (
+            <DataField key={index} {...info} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsView({ attendanceData, performanceMetrics }) {
+  return (
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-slate-900">Performance Analytics</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <AttendanceBreakdown attendanceData={attendanceData} />
+        <PerformanceTrends performanceMetrics={performanceMetrics} />
+      </div>
+    </div>
+  );
+}
+
+function AttendanceBreakdown({ attendanceData }) {
+  const { totalWorkingDays, presentDays, absentDays, halfDays, leaveDays } = attendanceData;
+  
+  const breakdown = [
+    { label: 'Present', value: presentDays, color: 'bg-emerald-500', percentage: (presentDays / totalWorkingDays * 100).toFixed(1) },
+    { label: 'Absent', value: absentDays, color: 'bg-red-500', percentage: (absentDays / totalWorkingDays * 100).toFixed(1) },
+    { label: 'Half Day', value: halfDays, color: 'bg-amber-500', percentage: (halfDays / totalWorkingDays * 100).toFixed(1) },
+    { label: 'Leave', value: leaveDays, color: 'bg-blue-500', percentage: (leaveDays / totalWorkingDays * 100).toFixed(1) }
+  ];
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Attendance Breakdown</h3>
+      <div className="space-y-4">
+        {breakdown.map((item, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className={`w-4 h-4 ${item.color} rounded-full`}></div>
+              <span className="text-sm font-medium text-slate-700">{item.label}</span>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-bold text-slate-900">{item.value} days</div>
+              <div className="text-xs text-slate-500">{item.percentage}%</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PerformanceTrends({ performanceMetrics }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Performance Trends</h3>
+      <div className="space-y-6">
+        {performanceMetrics.slice(0, 3).map((metric, index) => {
+          const Icon = metric.icon;
+          return (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Icon className="w-5 h-5 text-slate-400" />
+                <div>
+                  <div className="text-sm font-medium text-slate-900">{metric.title}</div>
+                  <div className="text-xs text-slate-500">Current: {metric.value}</div>
+                </div>
+              </div>
+              <div className={`text-xs font-medium px-2 py-1 rounded-full ${
+                metric.trend === 'up' ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'
+              }`}>
+                {metric.change}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ContactInformation({ studentData }) {
+  const contactInfo = [
+    { label: 'Parent Email', value: studentData.parentEmail, icon: Mail },
+    { label: 'Mother\'s Name', value: studentData.motherName, icon: User },
+    { label: 'Father\'s Name', value: studentData.fatherName, icon: User }
+  ];
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Family & Contact Information</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {contactInfo.map((info, index) => (
+          <DataField key={index} {...info} />
+        ))}
+      </div>
+
+      {studentData.emergencyContact && (
+        <div className="border-t border-slate-200 pt-6">
+          <h4 className="text-md font-semibold text-slate-900 mb-4 flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 text-red-500" />
+            <span>Emergency Contact</span>
+          </h4>
+          <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-red-600 mb-1">Contact Name</p>
+                <p className="font-medium text-red-800">{studentData.emergencyContact.name}</p>
+                {studentData.emergencyContact.relationship && (
+                  <p className="text-xs text-red-600">({studentData.emergencyContact.relationship})</p>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-red-600 mb-1">Phone Number</p>
+                <p className="font-medium text-red-800">{studentData.emergencyContact.phone}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DataField({ label, value, icon: Icon, fullWidth = false }) {
+  return (
+    <div className={`${fullWidth ? 'col-span-full' : ''} flex items-center space-x-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors`}>
+      <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        <Icon className="w-5 h-5 text-slate-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-slate-500 mb-1">{label}</p>
+        <p className="font-medium text-slate-900 break-words">{value}</p>
+      </div>
+    </div>
   );
 }

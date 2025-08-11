@@ -338,7 +338,7 @@ const ModernAssignmentCard = ({ assignment, onOpen }) => {
       bgPattern: 'bg-gradient-to-br from-blue-50 to-indigo-50'
     },
     single_video: {
-      icon: <Video className="w-5 h-5" />,
+      icon: <Video className="w-5 h-5" />, // commit changes
       label: 'Video Lesson',
       gradient: 'from-purple-500 to-violet-500',
       bgPattern: 'bg-gradient-to-br from-purple-50 to-violet-50'
