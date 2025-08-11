@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlayCircle, FileText, Calendar, X, Image as ImageIcon, Clock, BookOpen, Video, ChevronRight, Filter, Search, Bell, User, Home, BarChart3, Brain, AlertTriangle, ArrowUp } from 'lucide-react';
-
-// ========================================================================
-// 1. DATA & LOGIC HOOK
-// Enhanced with comprehensive learning data
-// ========================================================================
+import { PlayCircle, FileText, Calendar, MoreHorizontal, X, Youtube, Image as ImageIcon, Clock, BookOpen, Video, ChevronRight, Star, TrendingUp, Award, Target, Zap, Filter, Search, Bell, User, Settings, Home, BarChart3, Brain, Flame, CheckCircle2, AlertTriangle, ArrowUp } from 'lucide-react';
 
 const useAssignments = () => {
     const [assignments, setAssignments] = useState([]);
@@ -73,7 +68,46 @@ const useAssignments = () => {
             videoThumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600&h=400&fit=crop',
             videoDuration: '1h 45min'
           },
-
+          { 
+            _id: '4', 
+            title: 'UX Design Principles & User Research', 
+            subject: 'Design', 
+            dueDate: '2025-09-05T23:59:59Z', 
+            progress: 0,
+            difficulty: 'Intermediate',
+            estimatedTime: '3h 15min',
+            contentType: 'content',
+            priority: 'medium',
+            instructor: 'Alex Kim',
+            rating: 4.9,
+            enrolledStudents: 567,
+            tags: ['UX', 'Research', 'Prototyping'],
+            content: [
+              { id: 'c5', type: 'TEXT', title: 'User-Centered Design Philosophy', body: 'Understand the core principles of user-centered design and how to put users at the heart of every design decision. Learn about empathy mapping, user personas, and journey mapping techniques.' },
+              { id: 'c6', type: 'IMAGE', title: 'Design Thinking Process', url: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=600&h=400&fit=crop' },
+              { id: 'c7', type: 'TEXT', title: 'Conducting Effective User Research', body: 'Master qualitative and quantitative research methods including user interviews, surveys, usability testing, and A/B testing to gather meaningful insights.' }
+            ]
+          },
+          { 
+            _id: '5', 
+            title: 'Blockchain & Web3 Development', 
+            subject: 'Blockchain', 
+            dueDate: '2025-09-10T23:59:59Z', 
+            progress: 45,
+            difficulty: 'Advanced',
+            estimatedTime: '5h 20min',
+            contentType: 'playlist',
+            priority: 'low',
+            instructor: 'David Park',
+            rating: 4.6,
+            enrolledStudents: 234,
+            tags: ['Solidity', 'Ethereum', 'DeFi'],
+            playlist: [
+                { id: 'v6', title: 'Blockchain Fundamentals & Architecture', url: 'https://www.youtube.com/watch?v=blockchain1', duration: '62 min', thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=400&h=225&fit=crop' },
+                { id: 'v7', title: 'Smart Contract Development with Solidity', url: 'https://www.youtube.com/watch?v=blockchain2', duration: '89 min', thumbnail: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=400&h=225&fit=crop' },
+                { id: 'v8', title: 'Building DApps with Web3.js', url: 'https://www.youtube.com/watch?v=blockchain3', duration: '76 min', thumbnail: 'https://images.unsplash.com/photo-1640161704729-cbe966a08853?q=80&w=400&h=225&fit=crop' }
+            ]
+          }
         ];
 
         setTimeout(() => {
@@ -139,6 +173,112 @@ const NavigationBar = () => {
   );
 };
 
+const HeroSection = ({ stats }) => {
+  return (
+    <div className="relative bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl opacity-70 animate-pulse"></div>
+        <div className="absolute top-0 right-0 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl opacity-70 animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-xl opacity-70 animate-pulse animation-delay-4000"></div>
+      </div>
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                ✨ Learning Dashboard
+              </div>
+            </div>
+            <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Master New
+              <span className="block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                Skills Daily
+              </span>
+            </h1>
+            <p className="text-xl text-purple-100 mb-8 leading-relaxed">
+              Transform your career with our comprehensive learning platform. Track progress, 
+              engage with interactive content, and achieve your professional goals faster than ever.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <button className="px-6 py-3 bg-white text-purple-900 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                Start Learning
+              </button>
+              <button className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-200 border border-white/20">
+                View Progress
+              </button>
+            </div>
+          </div>
+          
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-green-500/20 rounded-xl">
+                  <CheckCircle2 className="w-6 h-6 text-green-400" />
+                </div>
+                <span className="text-green-400 font-semibold">Completed</span>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">{stats.completed}</div>
+              <div className="text-purple-200 text-sm">Assignments done</div>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-blue-500/20 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-blue-400" />
+                </div>
+                <span className="text-blue-400 font-semibold">In Progress</span>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">{stats.inProgress}</div>
+              <div className="text-purple-200 text-sm">Active learning</div>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-orange-500/20 rounded-xl">
+                  <Flame className="w-6 h-6 text-orange-400" />
+                </div>
+                <span className="text-orange-400 font-semibold">Streak</span>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">12</div>
+              <div className="text-purple-200 text-sm">Days active</div>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-purple-500/20 rounded-xl">
+                  <Target className="w-6 h-6 text-purple-400" />
+                </div>
+                <span className="text-purple-400 font-semibold">Goals</span>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">8/10</div>
+              <div className="text-purple-200 text-sm">This month</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Quick Actions */}
+        <div className="mt-12 flex flex-wrap gap-4">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-sm border border-white/20">
+            <Clock className="w-4 h-4" />
+            2 assignments due this week
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-sm border border-white/20">
+            <Award className="w-4 h-4" />
+            3 certificates earned
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-sm border border-white/20">
+            <Star className="w-4 h-4" />
+            4.8 average score
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const FilterBar = ({ onFilterChange }) => {
   return (
@@ -170,7 +310,7 @@ const FilterBar = ({ onFilterChange }) => {
 };
 
 const ModernAssignmentCard = ({ assignment, onOpen }) => {
-  const { title, subject, dueDate, progress, contentType, difficulty, estimatedTime, priority, tags } = assignment;
+  const { title, subject, dueDate, progress, contentType, difficulty, estimatedTime, priority, instructor, rating, enrolledStudents, tags } = assignment;
   
   const priorityConfig = {
     high: { color: 'bg-red-500', glow: 'shadow-red-500/20' },
@@ -266,6 +406,23 @@ const ModernAssignmentCard = ({ assignment, onOpen }) => {
         {title}
       </h3>
 
+      {/* Instructor & Rating */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-700">{instructor}</p>
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 text-yellow-400 fill-current" />
+              <span className="text-xs text-gray-600">{rating}</span>
+              <span className="text-xs text-gray-400">• {enrolledStudents} students</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-4">
         {tags.slice(0, 3).map((tag, index) => (
@@ -315,6 +472,132 @@ const ModernAssignmentCard = ({ assignment, onOpen }) => {
   );
 };
 
+// Modal Components (keeping the existing ones but with slight styling updates)
+const VideoPlaylistModal = ({ isOpen, onClose, playlist }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl m-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white">
+                <PlayCircle className="w-6 h-6" />
+              </div>
+              Video Course
+            </h2>
+            <p className="text-gray-500 mt-1">{playlist.length} lessons • Complete at your own pace</p>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="p-3 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+          <div className="grid gap-4">
+            {playlist.map((video, index) => (
+              <a 
+                key={video.id} 
+                href={video.url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="group flex items-center gap-4 p-4 rounded-2xl hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200 border border-gray-100 hover:border-red-200 hover:shadow-md"
+              >
+                <div className="relative flex-shrink-0">
+                  <img 
+                    src={video.thumbnail} 
+                    alt={video.title} 
+                    className="w-20 h-12 object-cover rounded-lg"
+                  />
+                  <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center">
+                    <PlayCircle className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {index + 1}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-800 group-hover:text-red-600 transition-colors truncate">
+                    {video.title}
+                  </h4>
+                  <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                    <Clock className="w-3 h-3" />
+                    {video.duration}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SingleVideoModal = ({ isOpen, onClose, assignment }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl m-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="relative">
+          <img 
+            src={assignment.videoThumbnail} 
+            alt={assignment.title} 
+            className="w-full h-64 object-cover"
+          />
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <a 
+              href={assignment.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white/20 backdrop-blur-sm border border-white/30 text-white p-4 rounded-full hover:bg-white/30 transition-all duration-200 hover:scale-110"
+            >
+              <PlayCircle className="w-12 h-12" />
+            </a>
+          </div>
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-black/40 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-violet-500 rounded-xl text-white">
+              <Video className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">{assignment.title}</h2>
+              <p className="text-gray-500 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {assignment.videoDuration}
+              </p>
+            </div>
+          </div>
+          
+          <a 
+            href={assignment.videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-semibold py-3 px-6 rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-200 group"
+          >
+            <PlayCircle className="w-5 h-5" />
+            Watch Video
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ContentPortalModal = ({ isOpen, onClose, content }) => {
   const [activeContent, setActiveContent] = useState(null);
@@ -449,6 +732,17 @@ const AssignmentBoard = () => {
   const handleCloseModal = () => {
     setModalState({ isOpen: false, assignment: null });
   };
+
+  // Calculate stats
+  const completedCount = assignments.filter(a => a.progress === 100).length;
+  const inProgressCount = assignments.filter(a => a.progress > 0 && a.progress < 100).length;
+  const notStartedCount = assignments.filter(a => a.progress === 0).length;
+
+  const stats = {
+    completed: completedCount,
+    inProgress: inProgressCount,
+    notStarted: notStartedCount
+  };
   
   if (loading) {
     return (
@@ -465,14 +759,24 @@ const AssignmentBoard = () => {
     );
   }
 
+  const urgentAssignments = assignments.filter(a => {
+    const daysLeft = Math.ceil((new Date(a.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+    return daysLeft <= 3;
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">      
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      {/* <NavigationBar /> */}
+      
+      {/* Hero Section */}
+      <HeroSection stats={stats} />
+      
       {/* Main Content */}
-      <div className="max-w-8xl mx-auto px-4 sm:px-2 lg:px-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className='px-1'>
+          <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Active Assignments</h2>
             <p className="text-gray-600">Continue your learning journey with these personalized courses</p>
           </div>
@@ -491,8 +795,33 @@ const AssignmentBoard = () => {
         {/* Filter Bar */}
         <FilterBar />
 
+        {/* Urgent Assignments Alert */}
+        {urgentAssignments.length > 0 && (
+          <div className="mb-8 bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 border-2 border-red-200/50 rounded-2xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl text-white shadow-lg">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-red-800 mb-2 text-lg">⚠️ Urgent Action Required</h3>
+                <p className="text-red-700 mb-3">
+                  You have <strong>{urgentAssignments.length} assignment{urgentAssignments.length > 1 ? 's' : ''}</strong> due within the next 3 days. 
+                  Consider prioritizing these to stay on track with your learning goals.
+                </p>
+                <div className="flex gap-2">
+                  {urgentAssignments.map(assignment => (
+                    <span key={assignment._id} className="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-lg">
+                      {assignment.title}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Assignment Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {assignments.map(assignment => (
             <ModernAssignmentCard 
               key={assignment._id} 
@@ -501,7 +830,37 @@ const AssignmentBoard = () => {
             />
           ))}
         </div>
+
+        {/* Bottom CTA Section */}
+        <div className="mt-16 bg-gradient-to-r from-violet-600 to-purple-600 rounded-3xl p-12 text-center text-white">
+          <h3 className="text-3xl font-bold mb-4">Ready to Level Up Your Skills?</h3>
+          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of learners who are already transforming their careers with our comprehensive courses.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <button className="px-8 py-4 bg-white text-purple-600 font-bold rounded-2xl hover:bg-gray-100 transition-all duration-200 flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Browse All Courses
+            </button>
+            <button className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-2xl hover:bg-white/20 transition-all duration-200 border border-white/20">
+              View Learning Path
+            </button>
+          </div>
+        </div>
       </div>
+        
+      {/* Modals */}
+      <VideoPlaylistModal 
+        isOpen={modalState.isOpen && modalState.assignment?.contentType === 'playlist'}
+        onClose={handleCloseModal}
+        playlist={modalState.assignment?.playlist || []}
+      />
+      
+      <SingleVideoModal 
+        isOpen={modalState.isOpen && modalState.assignment?.contentType === 'single_video'}
+        onClose={handleCloseModal}
+        assignment={modalState.assignment}
+      />
       
       <ContentPortalModal
         isOpen={modalState.isOpen && modalState.assignment?.contentType === 'content'}
