@@ -401,46 +401,109 @@ const ExamDatesheet = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Pagination */}
+        {/* Modern Pagination */}
         {totalPages > 1 && (
-          <motion.div variants={itemVariants} className="flex items-center justify-center gap-2 mb-8">
-            <button
-              className={`p-3 rounded-xl font-medium transition-all ${
-                currentPage === 1 
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                  : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-600'
-              }`}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+          <motion.div 
+            variants={itemVariants} 
+            className="flex flex-col items-center justify-center gap-4 mb-8"
+          >
+            {/* Page Info */}
+            <div className="text-sm text-slate-600 font-medium">
+              Showing {startIdx + 1} to {Math.min(endIdx, filteredExams.length)} of {filteredExams.length} exams
+            </div>
             
-            {[...Array(totalPages)].map((_, idx) => (
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-center gap-2">
+              {/* Previous Button */}
               <button
-                key={idx}
-                onClick={() => setCurrentPage(idx + 1)}
-                className={`w-10 h-10 rounded-xl font-semibold transition-all ${
-                  currentPage === idx + 1
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-white text-slate-700 hover:bg-blue-50'
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+                  currentPage === 1 
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                    : 'bg-white/80 backdrop-blur-sm text-slate-700 hover:bg-white hover:shadow-lg hover:scale-105 border border-slate-200/50'
                 }`}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
               >
-                {idx + 1}
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Previous</span>
               </button>
-            ))}
-            
-            <button
-              className={`p-3 rounded-xl font-medium transition-all ${
-                currentPage === totalPages 
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                  : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-600'
-              }`}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {(() => {
+                  const pages = [];
+                  const maxVisiblePages = 7;
+                  
+                  if (totalPages <= maxVisiblePages) {
+                    // Show all pages if total is small
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(i);
+                    }
+                  } else {
+                    // Always show first page
+                    pages.push(1);
+                    
+                    if (currentPage <= 4) {
+                      // Show first 5 pages + ellipsis + last page
+                      for (let i = 2; i <= 5; i++) {
+                        pages.push(i);
+                      }
+                      pages.push('...');
+                      pages.push(totalPages);
+                    } else if (currentPage >= totalPages - 3) {
+                      // Show first page + ellipsis + last 5 pages
+                      pages.push('...');
+                      for (let i = totalPages - 4; i <= totalPages; i++) {
+                        pages.push(i);
+                      }
+                    } else {
+                      // Show first page + ellipsis + current-1, current, current+1 + ellipsis + last page
+                      pages.push('...');
+                      for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        pages.push(i);
+                      }
+                      pages.push('...');
+                      pages.push(totalPages);
+                    }
+                  }
+                  
+                  return pages.map((page, index) => (
+                    <React.Fragment key={index}>
+                      {page === '...' ? (
+                        <div className="w-10 h-10 flex items-center justify-center text-slate-400 font-medium">
+                          ...
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-10 h-10 rounded-xl font-semibold transition-all duration-200 ${
+                            currentPage === page
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-110'
+                              : 'bg-white/80 backdrop-blur-sm text-slate-700 hover:bg-white hover:shadow-md hover:scale-105 border border-slate-200/50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )}
+                    </React.Fragment>
+                  ));
+                })()}
+              </div>
+              
+              {/* Next Button */}
+              <button
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+                  currentPage === totalPages 
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                    : 'bg-white/80 backdrop-blur-sm text-slate-700 hover:bg-white hover:shadow-lg hover:scale-105 border border-slate-200/50'
+                }`}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </motion.div>
         )}
 

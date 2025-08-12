@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CalendarDays, Mail, Home, GraduationCap, Briefcase, Menu, X, BookOpen,
-  CalendarCheck, Trophy, Megaphone, Newspaper, User2, HelpCircle,
-  BookOpenText, LayoutGrid, CheckSquare, Bell, ChevronRight, Sparkles,
+  CalendarDays, Mail, X, BookOpen,
+  CalendarCheck, Megaphone, Newspaper, User2, HelpCircle,
+  BookOpenText, LayoutGrid, CheckSquare, Bell, Sparkles,
+  Loader2,
+  Home,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -10,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import img1 from '../../assets/IMG_6340-removebg-preview.png';
 
 const WelcomeBanner = () => {
-  const studentName = useSelector((state) => state.auth?.user?.name) || 'Sagar';
+  const student = useSelector((state) => state.userData?.user) || 'Sagar';
 
   const bannerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -41,7 +43,7 @@ const WelcomeBanner = () => {
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <div>
           <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl font-bold text-slate-800">
-            Welcome Back, {studentName}!
+            Welcome Back, {student?.firstName}!
           </motion.h2>
           <motion.p variants={itemVariants} className="mt-2 text-slate-600 max-w-lg">
             Ready to learn something new today? Check your assignments and upcoming events.
@@ -52,9 +54,9 @@ const WelcomeBanner = () => {
           <motion.div
             animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            className="w-48 h-48 bg-gradient-to-br from-indigo-200 to-blue-200 rounded-full flex items-center justify-center"
+            className="w-48 h-48 bg-gradient-to-br from-indigo-200 to-blue-200 rounded-full flex items-center justify-center overflow-hidden"
           >
-            <Sparkles size={80} className="text-white/80" strokeWidth={1.5} />
+            <img src={student?.avatar} size={80} className="w-full h-full object-cover opacity-80" strokeWidth={1.5} />
           </motion.div>
         </div>
       </div>
@@ -73,6 +75,7 @@ const Header = () => {
   const bottomNavItems = useMemo(() => [
     { label: 'Play Quiz', icon: <HelpCircle size={24} />, link: '/QuizeCards' },
     { label: 'Assignments', icon: <BookOpenText size={24} />, link: '/main/Assignment' },
+    { label: 'Home', icon: <Home size={24} />, link: '/' },
     { label: 'Calendar', icon: <CalendarDays size={24} />, link: '/main/calander' },
     { label: 'More', icon: <LayoutGrid size={24} />, action: () => setShowMore(true) },
   ], []);

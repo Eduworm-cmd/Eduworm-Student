@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Clock, User, BookOpen, Calendar, AlertCircle, Loader2, ChevronLeft, ChevronRight, MapPin, Bell } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { allTimeTable,getStudentById } from "../../api/AllApis";
+import { allTimeTable, getStudentById } from "../../api/AllApis";
 import Loader from "../../Loader/Loader";
 
 export const TimeTable = () => {
     const { enqueueSnackbar } = useSnackbar();
-        const [timetableData, setTimetableData] = useState(null);
+    const [timetableData, setTimetableData] = useState(null);
     const [studentData, setStudentData] = useState(null);
     const [selectedClass, setSelectedClass] = useState("");
     const [selectedDay, setSelectedDay] = useState(null);
@@ -16,7 +16,7 @@ export const TimeTable = () => {
     const [error, setError] = useState(null);
     const [isStudentLoading, setIsStudentLoading] = useState(false);
     const [isTimetableLoading, setIsTimetableLoading] = useState(false);
-    
+
     const user = useSelector((state) => state.auth?.user);
 
     // Utility functions
@@ -117,11 +117,12 @@ export const TimeTable = () => {
         setIsStudentLoading(true);
         try {
             const response = await getStudentById(user.studentId);
-            
-            if (response?.status && response?.data?.student) {
+
+
+            if (response?.success && response?.data?.student) {
                 setStudentData(response.data?.student);
                 setSelectedClass(response.data.student?.class);
-            } 
+            }
         } catch (error) {
             console.error('Error fetching student:', error);
         } finally {
@@ -130,7 +131,7 @@ export const TimeTable = () => {
     }, [user?.studentId]);
 
     const fetchAllTimetable = useCallback(async () => {
-      
+
         if (!user?.branchId || !studentData?.class) {
             setError("Missing required data (branch ID or student class)");
             return;
@@ -141,7 +142,7 @@ export const TimeTable = () => {
 
         try {
             const response = await allTimeTable(user.branchId, studentData.class?._id);
-            
+
             if (response?.data?.status && response?.data?.data) {
                 setTimetableData(response.data);
             }
@@ -184,17 +185,17 @@ export const TimeTable = () => {
     }, [selectedDay, weekDays]);
 
     const LessonCard = ({ lesson, index }) => (
-        <div 
+        <div
             className={`relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer group transform hover:-translate-y-2 hover:scale-105`}
             onClick={() => handleEdit(lesson._id)}
         >
             {/* Gradient overlay */}
             <div className={`absolute inset-0 bg-gradient-to-br ${getSubjectStyle(lesson?.subject)} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
-            
+
             {/* Top accent bar */}
             <div className={`h-1 bg-gradient-to-r ${getSubjectStyle(lesson?.subject)}`}></div>
-            
-            <div className="relative p-6">
+
+            <div className="relative p-5">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-4">
@@ -226,7 +227,7 @@ export const TimeTable = () => {
                             <div className="font-bold text-gray-900">{lesson.startTime} - {lesson.endTime}</div>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                         <div className="p-2 rounded-lg bg-gray-200">
                             <User className="w-4 h-4 text-gray-600" />
@@ -287,47 +288,42 @@ export const TimeTable = () => {
     const WeekDayCard = ({ day, isSelected, onClick }) => (
         <div
             onClick={onClick}
-            className={`relative overflow-hidden rounded-2xl p-4 cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                isSelected
+            className={`relative overflow-hidden rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected
                     ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
                     : day.isToday
-                    ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
-            }`}
+                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
+                }`}
         >
-            {/* Background pattern for selected day */}
+
             {isSelected && (
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-2 right-2 w-8 h-8 border-2 border-white rounded-full"></div>
                     <div className="absolute bottom-2 left-2 w-4 h-4 border border-white rounded-full"></div>
                 </div>
             )}
-            
+
             <div className="relative z-10 text-center">
-                <div className={`text-xs font-semibold mb-2 ${
-                    isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-600' : 'text-gray-500'
-                }`}>
+                <div className={`text-xs font-semibold mb-2 ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
                     {day.isToday ? 'TODAY' : day.day.toUpperCase()}
                 </div>
-                <div className={`text-3xl font-bold mb-1 ${
-                    isSelected ? 'text-white' : 'text-gray-900'
-                }`}>
+                <div className={`text-3xl font-bold mb-1 ${isSelected ? 'text-white' : 'text-gray-900'
+                    }`}>
                     {day.date}
                 </div>
-                <div className={`text-sm font-medium ${
-                    isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-700' : 'text-gray-600'
-                }`}>
-                    {day.day}
+                <div className={`text-sm font-medium ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-700' : 'text-gray-600'
+                    }`}>
+                    {day.dayFull.toLowerCase()}
                 </div>
             </div>
         </div>
     );
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-            <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-8xl mx-auto px-4 py-2">
                 {/* Header Section */}
-                <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+                <div className="bg-white rounded-3xl shadow-xl p-4 mb-8 border border-gray-100">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div className="flex items-center gap-6">
                             <div className="relative">
@@ -339,20 +335,21 @@ export const TimeTable = () => {
                                 </div>
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900 mb-2">My Timetable</h1>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-0">My Timetable</h1>
                                 <p className="text-gray-600 text-lg">
-                                    {studentData?.name ? `${studentData.name}'s weekly schedule` : 'Manage your class schedule'}
+                                    {studentData?.firstName ? `${studentData.firstName}'s weekly schedule` : 'Manage your class schedule'}
                                 </p>
-                                {studentData?.class && (
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                                            Class {studentData.class.name}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
-                        
+                        {studentData?.class && (
+                            <div className="flex items-center justify-end gap-2 mt-2">
+
+                                <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                    {studentData.class.className}
+                                </div>
+                            </div>
+                        )}
+
                         {isLoading && (
                             <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 rounded-full">
                                 <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>

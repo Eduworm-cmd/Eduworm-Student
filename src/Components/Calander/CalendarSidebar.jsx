@@ -130,7 +130,7 @@ const CalendarCard = ({
                         break;
                 }
             } else if (isWeekend) {
-                dotColor = 'bg-gray-200 text-slate-700';
+                dotColor = 'bg-gray-200 text-slate-500';
                 status = date.getDay() === 0 ? 'Sunday' : 'Saturday';
             }
 
@@ -202,19 +202,19 @@ const CalendarCard = ({
                     {/* Legend */}
                     <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
                         <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-green-200"></div>
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
                             <span className="text-slate-600">Present</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-red-200"></div>
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
                             <span className="text-slate-600">Absent</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-yellow-200"></div>
+                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                             <span className="text-slate-600">Leave</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                             <span className="text-slate-600">Holiday</span>
                         </div>
                     </div>

@@ -35,37 +35,7 @@ import {
   Calendar as CalendarIcon,
   Briefcase
 } from 'lucide-react';
-
-// Mock data for demonstration
-const mockStudentData = {
-  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
-  name: 'Alexander Chen',
-  class: 'Computer Science - Year 12',
-  rollNo: 'CS2024-047',
-  adharNo: '4532 8901 2345',
-  academicYear: '2024-2025',
-  admissionClass: 'Year 11',
-  oldAdmissionNo: 'ADCS240047',
-  dateOfAdmission: '15 August, 2023',
-  dateOfBirth: '23 March, 2007',
-  parentEmail: 'chen.parents@email.com',
-  motherName: 'Linda Chen',
-  fatherName: 'David Chen',
-  schoolName: 'Metropolitan Academy of Sciences',
-  schoolBranch: 'North Campus',
-  bloodGroup: 'A+',
-  uniqueId: 'MAS2024047',
-  gender: 'Male',
-  emergencyContact: {
-    name: 'Dr. Sarah Chen',
-    phone: '+1 (555) 234-5678',
-    relationship: 'Aunt'
-  },
-  enrollmentStatus: 'Active',
-  gpa: 3.87,
-  rank: 12,
-  totalStudents: 156
-};
+import { useSelector } from 'react-redux';
 
 const mockAttendanceData = {
   totalWorkingDays: 187,
@@ -84,29 +54,97 @@ export default function StudentProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const student = useSelector((state) => state.userData?.user)
 
-  // Simulate data loading
+  const mockAttendanceData = {
+    totalWorkingDays: 187,
+    presentDays: 172,
+    absentDays: 12,
+    attendancePercentage: 92.0,
+    halfDays: 2,
+    leaveDays: 1,
+    notMarkedDays: 0
+  };
+
+  const staticData = {
+    gpa: 3.87,
+    rank: 12,
+    totalStudents: 156,
+    academicYear: '2024-2025',
+    admissionClass: 'LKG'
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         await new Promise(resolve => setTimeout(resolve, 1200));
-        setStudentData(mockStudentData);
+
+        if (student) {
+          const mappedStudentData = {
+            avatar: student.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+            name: `${student.firstName} ${student.lastName}`,
+            class: student.class?.className || 'N/A',
+            rollNo: student.rollNo || 'N/A',
+            adharNo: student.documents?.aadharCard || 'N/A',
+            academicYear: staticData.academicYear,
+            admissionClass: student.class?.className || staticData.admissionClass,
+            oldAdmissionNo: student.admissionNumber || 'N/A',
+            dateOfAdmission: student.dateOfJoining ? new Date(student.dateOfJoining).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }) : 'N/A',
+            dateOfBirth: student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }) : 'N/A',
+            parentEmail: student.parents?.[0]?.email || 'N/A',
+            motherName: student.parents?.find(p => p.relationship === 'Mother')?.firstName ?
+              `${student.parents.find(p => p.relationship === 'Mother').firstName} ${student.parents.find(p => p.relationship === 'Mother').lastName}` :
+              'Not Available',
+            fatherName: student.parents?.find(p => p.relationship === 'Father')?.firstName ?
+              `${student.parents.find(p => p.relationship === 'Father').firstName} ${student.parents.find(p => p.relationship === 'Father').lastName}` :
+              'Not Available',
+            schoolName: student.school?.schoolName || 'N/A',
+            schoolBranch: student.schoolBranch?.name || 'N/A',
+            bloodGroup: student.bloodGroup || 'N/A',
+            uniqueId: student.uniqueId || 'N/A',
+            gender: student.gender || 'N/A',
+            emergencyContact: {
+              name: student.emergencyContact?.name || 'N/A',
+              phone: student.emergencyContact?.phone || 'N/A',
+              relationship: 'Emergency Contact'
+            },
+            enrollmentStatus: student.isActive ? 'Active' : 'Inactive',
+            gpa: staticData.gpa,
+            rank: staticData.rank,
+            totalStudents: staticData.totalStudents,
+            transferCertificate: student.documents?.transferCertificate || 'N/A',
+            studentIDCard: student.documents?.studentIDCard || 'N/A'
+          };
+
+          setStudentData(mappedStudentData);
+        }
+
         setAttendanceData(mockAttendanceData);
       } catch (err) {
+        console.log(err);
+
         setError('Failed to load profile data');
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, []);
+  }, [student]);
 
   const performanceMetrics = useMemo(() => {
     if (!attendanceData) return [];
-    
+
     const { totalWorkingDays, presentDays, attendancePercentage } = attendanceData;
-    
+
     return [
       {
         title: 'Attendance Rate',
@@ -151,16 +189,9 @@ export default function StudentProfile() {
     <div className="min-h-screen bg-slate-50">
       {/* Top Navigation Bar */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-40 backdrop-blur-sm bg-white/95">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-8xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-semibold text-slate-900">Academy Portal</span>
-              </div>
-              
               <div className="hidden md:flex items-center space-x-6">
                 {[
                   { id: 'dashboard', label: 'Dashboard' },
@@ -171,52 +202,14 @@ export default function StudentProfile() {
                   <button
                     key={item.id}
                     onClick={() => setActiveView(item.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      activeView === item.id 
-                        ? 'bg-slate-900 text-white' 
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeView === item.id
+                      ? 'bg-slate-900 text-white'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      }`}
                   >
                     {item.label}
                   </button>
                 ))}
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors relative">
-                <Bell className="w-5 h-5" />
-                <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-              </button>
-              <div className="relative">
-                <button
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-100 transition-colors"
-                >
-                  <img
-                    src={studentData.avatar}
-                    alt={studentData.name}
-                    className="w-8 h-8 rounded-lg object-cover"
-                  />
-                  <ChevronDown className="w-4 h-4 text-slate-400" />
-                </button>
-                
-                {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
-                    <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="font-medium text-slate-900">{studentData.name}</p>
-                      <p className="text-sm text-slate-500">{studentData.parentEmail}</p>
-                    </div>
-                    <div className="py-2">
-                      <ProfileMenuItem icon={Settings} label="Account Settings" />
-                      <ProfileMenuItem icon={Shield} label="Privacy & Security" />
-                      <ProfileMenuItem icon={Download} label="Export Data" />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -229,6 +222,7 @@ export default function StudentProfile() {
         {activeView === 'academics' && <AcademicsView studentData={studentData} />}
         {activeView === 'analytics' && <AnalyticsView attendanceData={attendanceData} performanceMetrics={performanceMetrics} />}
       </div>
+
     </div>
   );
 }
@@ -267,15 +261,6 @@ function ErrorState({ error, onRetry }) {
   );
 }
 
-function ProfileMenuItem({ icon: Icon, label }) {
-  return (
-    <button className="w-full flex items-center space-x-3 px-4 py-2 text-left text-slate-700 hover:bg-slate-50 transition-colors">
-      <Icon className="w-4 h-4" />
-      <span className="text-sm">{label}</span>
-    </button>
-  );
-}
-
 function DashboardView({ studentData, performanceMetrics, attendanceData }) {
   return (
     <div className="space-y-8">
@@ -296,7 +281,7 @@ function DashboardView({ studentData, performanceMetrics, attendanceData }) {
               </div>
               <div className="text-white">
                 <h1 className="text-2xl font-bold mb-1">{studentData.name}</h1>
-                <p className="text-slate-300 mb-3">{studentData.class} • Roll #{studentData.rollNo}</p>
+                <p className="text-slate-300 mb-3">{studentData.class} • Roll No : #{studentData.rollNo}</p>
                 <div className="flex items-center space-x-4 text-sm">
                   <span className="flex items-center space-x-1">
                     <Building className="w-4 h-4" />
@@ -308,11 +293,6 @@ function DashboardView({ studentData, performanceMetrics, attendanceData }) {
                   </span>
                 </div>
               </div>
-            </div>
-            <div className="text-right text-white">
-              <div className="text-3xl font-bold">{studentData.gpa}</div>
-              <div className="text-slate-300 text-sm">Current GPA</div>
-              <div className="text-xs text-slate-400 mt-1">Rank #{studentData.rank} of {studentData.totalStudents}</div>
             </div>
           </div>
         </div>
@@ -342,8 +322,6 @@ function DashboardView({ studentData, performanceMetrics, attendanceData }) {
 
 function MetricCard({ metric }) {
   const Icon = metric.icon;
-  const isPositive = metric.trend === 'up';
-  
   const colorClasses = {
     emerald: 'from-emerald-500 to-emerald-600',
     blue: 'from-blue-500 to-blue-600',
@@ -357,12 +335,6 @@ function MetricCard({ metric }) {
         <div className={`w-12 h-12 bg-gradient-to-r ${colorClasses[metric.color]} rounded-lg flex items-center justify-center`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
-        <div className={`flex items-center space-x-1 text-xs font-medium px-2 py-1 rounded-full ${
-          isPositive ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'
-        }`}>
-          <TrendingUp className={`w-3 h-3 ${isPositive ? '' : 'rotate-180'}`} />
-          <span>{metric.change}</span>
-        </div>
       </div>
       <div className="space-y-1">
         <div className="text-2xl font-bold text-slate-900">{metric.value}</div>
@@ -375,7 +347,7 @@ function MetricCard({ metric }) {
 function AttendanceChart({ attendanceData }) {
   const { presentDays, absentDays, totalWorkingDays } = attendanceData;
   const attendanceRate = Math.round((presentDays / totalWorkingDays) * 100);
-  
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -389,7 +361,7 @@ function AttendanceChart({ attendanceData }) {
           </button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-3 gap-6 mb-6">
         <div className="text-center">
           <div className="text-3xl font-bold text-emerald-600">{presentDays}</div>
@@ -404,7 +376,7 @@ function AttendanceChart({ attendanceData }) {
           <div className="text-sm text-slate-500">Overall Rate</div>
         </div>
       </div>
-      
+
       {/* Progress Bar */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm text-slate-600">
@@ -412,7 +384,7 @@ function AttendanceChart({ attendanceData }) {
           <span>{attendanceRate}% Complete</span>
         </div>
         <div className="w-full bg-slate-200 rounded-full h-3">
-          <div 
+          <div
             className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full transition-all duration-1000"
             style={{ width: `${attendanceRate}%` }}
           ></div>
@@ -436,11 +408,10 @@ function RecentActivity() {
       <div className="space-y-4">
         {activities.map((activity, index) => (
           <div key={index} className="flex items-start space-x-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
-            <div className={`w-2 h-2 rounded-full mt-2 ${
-              activity.status === 'completed' ? 'bg-emerald-500' :
+            <div className={`w-2 h-2 rounded-full mt-2 ${activity.status === 'completed' ? 'bg-emerald-500' :
               activity.status === 'upcoming' ? 'bg-blue-500' :
-              activity.status === 'present' ? 'bg-green-500' : 'bg-amber-500'
-            }`}></div>
+                activity.status === 'present' ? 'bg-green-500' : 'bg-amber-500'
+              }`}></div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900">{activity.title}</p>
               <p className="text-xs text-slate-500">{activity.time}</p>
@@ -500,10 +471,9 @@ function UpcomingEvents() {
               <p className="text-sm font-medium text-slate-900">{event.title}</p>
               <p className="text-xs text-slate-500">{event.date}</p>
             </div>
-            <div className={`w-3 h-3 rounded-full ${
-              event.type === 'exam' ? 'bg-red-400' :
+            <div className={`w-3 h-3 rounded-full ${event.type === 'exam' ? 'bg-red-400' :
               event.type === 'meeting' ? 'bg-blue-400' : 'bg-green-400'
-            }`}></div>
+              }`}></div>
           </div>
         ))}
       </div>
@@ -525,10 +495,6 @@ function ProfileView({ studentData }) {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-slate-900">Personal Information</h2>
-        <button className="flex items-center space-x-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-          <Edit3 className="w-4 h-4" />
-          <span>Edit Profile</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -555,20 +521,20 @@ function AcademicsView({ studentData }) {
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-slate-900">Academic Information</h2>
-      
+
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-6">Institution Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <DataField 
-            label="School Name" 
-            value={studentData.schoolName} 
+          <DataField
+            label="School Name"
+            value={studentData.schoolName}
             icon={Building}
             fullWidth
           />
-          <DataField 
-            label="Campus Branch" 
-            value={studentData.schoolBranch} 
-            icon={MapPin} 
+          <DataField
+            label="Campus Branch"
+            value={studentData.schoolBranch}
+            icon={MapPin}
           />
         </div>
       </div>
@@ -589,7 +555,7 @@ function AnalyticsView({ attendanceData, performanceMetrics }) {
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-slate-900">Performance Analytics</h2>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <AttendanceBreakdown attendanceData={attendanceData} />
         <PerformanceTrends performanceMetrics={performanceMetrics} />
@@ -600,7 +566,7 @@ function AnalyticsView({ attendanceData, performanceMetrics }) {
 
 function AttendanceBreakdown({ attendanceData }) {
   const { totalWorkingDays, presentDays, absentDays, halfDays, leaveDays } = attendanceData;
-  
+
   const breakdown = [
     { label: 'Present', value: presentDays, color: 'bg-emerald-500', percentage: (presentDays / totalWorkingDays * 100).toFixed(1) },
     { label: 'Absent', value: absentDays, color: 'bg-red-500', percentage: (absentDays / totalWorkingDays * 100).toFixed(1) },
@@ -645,9 +611,8 @@ function PerformanceTrends({ performanceMetrics }) {
                   <div className="text-xs text-slate-500">Current: {metric.value}</div>
                 </div>
               </div>
-              <div className={`text-xs font-medium px-2 py-1 rounded-full ${
-                metric.trend === 'up' ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'
-              }`}>
+              <div className={`text-xs font-medium px-2 py-1 rounded-full ${metric.trend === 'up' ? 'text-emerald-700 bg-emerald-100' : 'text-red-700 bg-red-100'
+                }`}>
                 {metric.change}
               </div>
             </div>
@@ -668,7 +633,7 @@ function ContactInformation({ studentData }) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <h3 className="text-lg font-semibold text-slate-900 mb-6">Family & Contact Information</h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {contactInfo.map((info, index) => (
           <DataField key={index} {...info} />
