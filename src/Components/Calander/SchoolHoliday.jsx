@@ -182,7 +182,7 @@ const SchoolHoliday = () => {
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
-              className="holiday-tooltip z-20 w-72 bg-white text-gray-800 border border-gray-200 rounded-xl shadow-xl p-4"
+              className="holiday-tooltip z-20 w-72 bg-white text-gray-800 border border-gray-200 rounded-xl shadow-xl p-4 relative"
               style={{
                 position: strategy,
                 top: y ?? 0,
@@ -190,6 +190,14 @@ const SchoolHoliday = () => {
               }}
               {...getFloatingProps()}
             >
+              {/* Close Button */}
+              <button
+                onClick={() => setActiveTooltipDate(null)}
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+
               <div className="flex items-center mb-3">
                 <div
                   className={`w-10 h-10 rounded-full bg-gradient-to-r ${getHolidayTypeColor(
