@@ -72,7 +72,7 @@ const AdminPanelLayout = () => {
     },
     {
       title: 'Leave',
-      url: '/main/SchoolHoliday',
+      url: '/main/LeaveApplication',
       description: 'A list of upcoming school holidays.',
       color: 'from-pink-500 to-pink-700',
       Icon: NotebookPen,

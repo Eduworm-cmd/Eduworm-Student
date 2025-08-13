@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Edit, Plus, Briefcase, FileText, Loader2 } f
 import { useSelector } from 'react-redux';
 import { apiService } from '../../api/apiService';
 import { getStudentById } from '../../api/AllApis';
+import { useNavigate } from 'react-router-dom';
 
 const mockUpcomingTasks = [
     { icon: <Briefcase />, title: "Science Project", subtitle: "Photosynthesis Model", bgColor: "bg-sky-100", iconColor: "text-sky-600" },
@@ -246,11 +247,11 @@ const UpcomingTasksCard = ({ tasks }) => (
     </div>
 );
 
-const QuickActionsCard = () => (
+const QuickActionsCard = ({onApplyLeave}) => (
     <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
         <h3 className="font-bold text-lg text-slate-800 mb-4">Quick Actions</h3>
         <div className="space-y-3">
-            <button className="w-full flex items-center gap-3 text-left p-3 rounded-lg hover:bg-slate-100 transition-colors">
+            <button className="w-full flex items-center cursor-pointer gap-3 text-left p-3 rounded-lg hover:bg-slate-100 transition-colors" onClick={onApplyLeave}>
                 <Edit size={18} className="text-indigo-500" />
                 <span className="font-semibold text-sm text-slate-700">Apply for Leave</span>
             </button>
@@ -342,6 +343,16 @@ const DashboardRightPanel = () => {
         fetchCalendarData(year, month);
     }, [currentMonth, studentId, schoolBranch]);
 
+    const navigate = useNavigate();
+
+     const handleLeaveApply = () => {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            navigate('/LeaveApplication');
+        } else {
+            navigate('/main/LeaveApplication');
+        }
+    };
     return (
         <div className="max-w-sm mx-auto space-y-6">
             <ProfileCard />
@@ -355,7 +366,7 @@ const DashboardRightPanel = () => {
                 attendancePercentage={attendancePercentage}
             />
             <UpcomingTasksCard tasks={mockUpcomingTasks} />
-            <QuickActionsCard />
+            <QuickActionsCard  onApplyLeave={handleLeaveApply}/>
         </div>
     );
 };

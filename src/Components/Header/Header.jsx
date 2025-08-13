@@ -74,19 +74,19 @@ const Header = () => {
 
   const bottomNavItems = useMemo(() => [
     { label: 'Play Quiz', icon: <HelpCircle size={24} />, link: '/QuizeCards' },
-    { label: 'Assignments', icon: <BookOpenText size={24} />, link: '/main/Assignment' },
+    { label: 'Assignments', icon: <BookOpenText size={24} />, link: '/Assignment' },
     { label: 'Home', icon: <Home size={24} />, link: '/' },
-    { label: 'Calendar', icon: <CalendarDays size={24} />, link: '/main/calander' },
+    { label: 'Calendar', icon: <CalendarDays size={24} />, link: '/calander' },
     { label: 'More', icon: <LayoutGrid size={24} />, action: () => setShowMore(true) },
   ], []);
 
   const moreItems = [
-    { label: 'Time Table', icon: <BookOpen size={28} />, link: '/main/timetable', bgColor: 'bg-teal-100', iconColor: 'text-teal-600' },
-    { label: 'Holidays', icon: <CalendarCheck size={28} />, link: '/main/SchoolHoliday', bgColor: 'bg-sky-100', iconColor: 'text-sky-600' },
-    { label: 'Date Sheet', icon: <Newspaper size={28} />, link: '/main/ExamDatesheet', bgColor: 'bg-blue-100', iconColor: 'text-blue-600' },
-    { label: 'Leave App', icon: <CheckSquare size={28} />, link: '/main/LeaveApplication', bgColor: 'bg-orange-100', iconColor: 'text-orange-600' },
-    { label: 'Ask Doubts', icon: <HelpCircle size={28} />, link: '/main/ask-doubts', bgColor: 'bg-red-100', iconColor: 'text-red-600' },
-    { label: 'Events', icon: <Megaphone size={28} />, link: '/main/events', bgColor: 'bg-purple-100', iconColor: 'text-purple-600' },
+    { label: 'Time Table', icon: <BookOpen size={28} />, link: '/timetable', bgColor: 'bg-teal-100', iconColor: 'text-teal-600' },
+    { label: 'Holidays', icon: <CalendarCheck size={28} />, link: '/SchoolHoliday', bgColor: 'bg-sky-100', iconColor: 'text-sky-600' },
+    { label: 'Date Sheet', icon: <Newspaper size={28} />, link: '/ExamDatesheet', bgColor: 'bg-blue-100', iconColor: 'text-blue-600' },
+    { label: 'Leave App', icon: <CheckSquare size={28} />, link: '/LeaveApplication', bgColor: 'bg-orange-100', iconColor: 'text-orange-600' },
+    { label: 'Ask Doubts', icon: <HelpCircle size={28} />, link: '/ask-doubts', bgColor: 'bg-red-100', iconColor: 'text-red-600' },
+    { label: 'Events', icon: <Megaphone size={28} />, link: '/events', bgColor: 'bg-purple-100', iconColor: 'text-purple-600' },
   ];
 
   useEffect(() => {

@@ -46,8 +46,7 @@ function App() {
             <Route index element={<Assignment />} />
             <Route path="ExamDatesheet" element={<ExamDatesheet />} />
             <Route path="chat" element={<StudentChatSystem />} />
-
-            {/* <Route path="calander" element={<CalendarSidebar />} /> */}
+            <Route path="calander" element={<CalendarSidebar />} />
             <Route path="ask-doubts" element={<Askdoubts />} />
             <Route path="QuizeCards" element={<QuizeCards />} />
             <Route path="LeaveApplication" element={<LeaveStudent />} />

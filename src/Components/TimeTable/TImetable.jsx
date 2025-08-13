@@ -286,39 +286,36 @@ export const TimeTable = () => {
     );
 
     const WeekDayCard = ({ day, isSelected, onClick }) => (
-        <div
-            onClick={onClick}
-            className={`relative overflow-hidden rounded-2xl p-3 cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected
-                    ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
-                    : day.isToday
-                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
-                }`}
-        >
-
+        <div onClick={onClick} className={`relative overflow-hidden rounded-xl sm:rounded-2xl p-1 sm:p-4 md:p-5 cursor-pointer transition-all duration-300 transform hover:scale-105 
+            ${isSelected
+                ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
+                : day.isToday
+                    ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
+            }`}>
             {isSelected && (
                 <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-2 right-2 w-8 h-8 border-2 border-white rounded-full"></div>
-                    <div className="absolute bottom-2 left-2 w-4 h-4 border border-white rounded-full"></div>
+                    <div className="absolute top-2 right-2 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 border-2 border-white rounded-full"></div>
+                    <div className="absolute bottom-2 left-2 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border border-white rounded-full"></div>
                 </div>
             )}
 
             <div className="relative z-10 text-center">
-                <div className={`text-xs font-semibold mb-2 ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-600' : 'text-gray-500'
-                    }`}>
+                <div className={`font-semibold mb-1  text-[10px] sm:text-xs ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-600' : 'text-gray-500'}`}>
                     {day.isToday ? 'TODAY' : day.day.toUpperCase()}
                 </div>
-                <div className={`text-3xl font-bold mb-1 ${isSelected ? 'text-white' : 'text-gray-900'
-                    }`}>
+
+                <div className={`font-bold mb-1 text-xl sm:text-2xl md:text-3xl ${isSelected ? 'text-white' : 'text-gray-900'}`}>
                     {day.date}
                 </div>
-                <div className={`text-sm font-medium ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-700' : 'text-gray-600'
-                    }`}>
+
+                <div className={`hidden sm:block font-medium text-[11px] sm:text-sm ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-700' : 'text-gray-600'}`}>
                     {day.dayFull.toLowerCase()}
                 </div>
             </div>
         </div>
     );
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             <div className="max-w-8xl mx-auto px-4 py-2">
@@ -342,7 +339,7 @@ export const TimeTable = () => {
                             </div>
                         </div>
                         {studentData?.class && (
-                            <div className="flex items-center justify-end gap-2 mt-2">
+                            <div className="hidden sm:flex items-center justify-end gap-2 mt-2">
 
                                 <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                                     {studentData.class.className}
@@ -360,7 +357,7 @@ export const TimeTable = () => {
 
                     {/* Week Days Navigation */}
                     <div className="mt-8">
-                        <div className="grid grid-cols-5 gap-4">
+                        <div className="grid grid-cols-5 gap-2 sm:gap-4">
                             {weekDays.map((day, index) => (
                                 <WeekDayCard
                                     key={index}

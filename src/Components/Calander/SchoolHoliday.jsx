@@ -22,7 +22,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const SchoolHoliday = () => {
   const branchId = useSelector((state) => state.auth.user.branchId);
-  const studentId = useSelector((state) => state.auth.user.studentId);
   const currentSchoolId = useSelector((state) => state.auth.user.schoolId);
 
   const [calendarData, setCalendarData] = useState(null);
@@ -193,7 +192,7 @@ const SchoolHoliday = () => {
           onMouseLeave={() => {
             setActiveTooltipDate(null);
           }}
-          className={`relative group holiday-day-cell h-20 md:h-24 w-full p-2 border border-gray-200 rounded-xl transition-all duration-300 hover:shadow-lg cursor-pointer ${isToday
+          className={`relative group holiday-day-cell h-10 md:h-24 w-full p-2 border border-gray-200 rounded-xl transition-all duration-300 hover:shadow-lg cursor-pointer ${isToday
             ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 ring-2 ring-blue-300'
             : 'bg-white hover:bg-gray-50'
             } ${isHoliday
@@ -209,7 +208,7 @@ const SchoolHoliday = () => {
               {day}
             </span>
             {isHoliday && (
-              <div className="mt-1">
+              <div className="hidden sm:block mt-1">
                 <div className="text-orange-600">
                   {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
                 </div>
@@ -604,7 +603,7 @@ const SchoolHoliday = () => {
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
+            <div className="p-2 md:p-8">
               {renderCalendarGrid()}
             </div>
           </motion.div>
