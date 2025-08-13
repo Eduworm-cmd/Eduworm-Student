@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,6 +19,15 @@ import {
 import { useSelector } from 'react-redux';
 import { apiService } from '../../api/apiService';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+  useHover,
+  useInteractions,
+} from '@floating-ui/react';
 
 const SchoolHoliday = () => {
   const branchId = useSelector((state) => state.auth.user.branchId);
@@ -53,11 +62,7 @@ const SchoolHoliday = () => {
   }, [currentDate]);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when month changes
-  }, [currentDate]);
-
-  useEffect(() => {
-    setCurrentPage(1); // Reset to first page when month changes
+    setCurrentPage(1);
   }, [currentDate]);
 
   const fetchCalendarData = async () => {
@@ -145,9 +150,77 @@ const SchoolHoliday = () => {
   const getDaysUntilHoliday = (dateStr) => {
     const holidayDate = new Date(dateStr);
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const diffTime = holidayDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const HolidayTooltip = ({ dateStr, dayData, daysUntil }) => {
+    const { x, y, strategy, refs, context } = useFloating({
+      open: activeTooltipDate === dateStr,
+      onOpenChange: (open) => setActiveTooltipDate(open ? dateStr : null),
+      placement: 'top',
+      middleware: [offset(10), flip({ padding: 10 }), shift({ padding: 10 })],
+      whileElementsMounted: autoUpdate,
+    });
+
+    const hover = useHover(context);
+    const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+
+    return (
+      <>
+        <div
+          ref={refs.setReference}
+          {...getReferenceProps()}
+          className="absolute inset-0"
+        />
+        <AnimatePresence>
+          {activeTooltipDate === dateStr && (
+            <motion.div
+              ref={refs.setFloating}
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              className="holiday-tooltip z-20 w-72 bg-white text-gray-800 border border-gray-200 rounded-xl shadow-xl p-4"
+              style={{
+                position: strategy,
+                top: y ?? 0,
+                left: x ?? 0,
+              }}
+              {...getFloatingProps()}
+            >
+              <div className="flex items-center mb-3">
+                <div
+                  className={`w-10 h-10 rounded-full bg-gradient-to-r ${getHolidayTypeColor(
+                    dayData?.holidayInfo?.type,
+                  )} flex items-center justify-center text-white mr-3`}
+                >
+                  {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
+                </div>
+                <div>
+                  <span className="font-bold text-gray-900 text-sm">
+                    {dayData?.holidayInfo?.name || 'Holiday'}
+                  </span>
+                  <div className="text-xs text-gray-500">
+                    {daysUntil > 0
+                      ? `${daysUntil} days away`
+                      : daysUntil === 0
+                      ? 'Today!'
+                      : 'Past'}
+                  </div>
+                </div>
+              </div>
+              {dayData?.holidayInfo?.description && (
+                <p className="text-sm text-gray-600 mt-2">
+                  {dayData.holidayInfo.description}
+                </p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
   };
 
   const renderCalendarGrid = () => {
@@ -184,26 +257,25 @@ const SchoolHoliday = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: day * 0.01 }}
-          onMouseEnter={() => {
-            if (isHoliday) {
-              setActiveTooltipDate(dateStr);
-            }
-          }}
-          onMouseLeave={() => {
-            setActiveTooltipDate(null);
-          }}
-          className={`relative group holiday-day-cell h-10 md:h-24 w-full p-2 border border-gray-200 rounded-xl transition-all duration-300 hover:shadow-lg cursor-pointer ${isToday
-            ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 ring-2 ring-blue-300'
-            : 'bg-white hover:bg-gray-50'
-            } ${isHoliday
+          className={`relative group holiday-day-cell h-10 md:h-24 w-full p-2 border border-gray-200 rounded-xl transition-all duration-300 hover:shadow-lg cursor-pointer ${
+            isToday
+              ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 ring-2 ring-blue-300'
+              : 'bg-white hover:bg-gray-50'
+          } ${
+            isHoliday
               ? 'bg-gradient-to-br from-orange-100 to-orange-200 border-orange-400 shadow-md hover:shadow-xl'
               : ''
-            }`}
+          }`}
         >
           <div className="flex flex-col h-full items-center justify-center text-center">
             <span
-              className={`text-sm md:text-lg font-semibold ${isToday ? 'text-blue-700' : isHoliday ? 'text-orange-800' : 'text-gray-700'
-                }`}
+              className={`text-sm md:text-lg font-semibold ${
+                isToday
+                  ? 'text-blue-700'
+                  : isHoliday
+                  ? 'text-orange-800'
+                  : 'text-gray-700'
+              }`}
             >
               {day}
             </span>
@@ -217,41 +289,13 @@ const SchoolHoliday = () => {
           </div>
 
           {isHoliday && (
-            <AnimatePresence>
-              {activeTooltipDate === dateStr && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  className="holiday-tooltip absolute z-20 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 bg-white text-gray-800 border border-gray-200 rounded-xl shadow-xl p-4"
-                >
-                  <div className="flex items-center mb-3">
-                    <div
-                      className={`w-10 h-10 rounded-full bg-gradient-to-r ${getHolidayTypeColor(
-                        dayData?.holidayInfo?.type,
-                      )} flex items-center justify-center text-white mr-3`}
-                    >
-                      {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
-                    </div>
-                    <div>
-                      <span className="font-bold text-gray-900 text-sm">
-                        {dayData?.holidayInfo?.name || 'Holiday'}
-                      </span>
-                      <div className="text-xs text-gray-500">
-                        {daysUntil > 0 ? `${daysUntil} days away` : daysUntil === 0 ? 'Today!' : 'Past'}
-                      </div>
-                    </div>
-                  </div>
-                  {dayData?.holidayInfo?.description && (
-                    <p className="text-sm text-gray-600 mt-2">
-                      {dayData.holidayInfo.description}
-                    </p>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <HolidayTooltip
+              dateStr={dateStr}
+              dayData={dayData}
+              daysUntil={daysUntil}
+            />
           )}
-        </motion.div>
+        </motion.div>,
       );
     }
 
@@ -276,7 +320,12 @@ const SchoolHoliday = () => {
     if (!calendarData) return null;
 
     const holidays = (calendarData?.calendar || [])
-      .filter((day) => day.isHoliday && (!day.holidayInfo?.schoolId || day.holidayInfo?.schoolId === currentSchoolId))
+      .filter(
+        (day) =>
+          day.isHoliday &&
+          (!day.holidayInfo?.schoolId ||
+            day.holidayInfo?.schoolId === currentSchoolId),
+      )
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (holidays.length === 0) {
@@ -289,7 +338,9 @@ const SchoolHoliday = () => {
           <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Gift className="w-10 h-10 text-blue-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">No Holidays This Month</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+            No Holidays This Month
+          </h3>
           <p className="text-gray-600 text-sm">Enjoy your regular schedule!</p>
         </motion.div>
       );
@@ -388,39 +439,47 @@ const SchoolHoliday = () => {
 
               {/* Page Numbers */}
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current
-                  const shouldShow = 
-                    page === 1 || 
-                    page === totalPages || 
-                    (page >= currentPage - 1 && page <= currentPage + 1);
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => {
+                    // Show first page, last page, current page, and pages around current
+                    const shouldShow =
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1);
 
-                  if (!shouldShow) {
-                    // Show ellipsis
-                    if (page === currentPage - 2 || page === currentPage + 2) {
-                      return (
-                        <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                          ...
-                        </span>
-                      );
+                    if (!shouldShow) {
+                      // Show ellipsis
+                      if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
+                        return (
+                          <span
+                            key={`ellipsis-${page}`}
+                            className="px-2 text-gray-400"
+                          >
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
                     }
-                    return null;
-                  }
 
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                        currentPage === page
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                          currentPage === page
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  },
+                )}
               </div>
 
               {/* Next Page */}
@@ -466,7 +525,10 @@ const SchoolHoliday = () => {
     },
     {
       label: 'Upcoming Holidays',
-      value: calendarData?.calendar?.filter(d => d.isHoliday && getDaysUntilHoliday(d.date) > 0).length || 0,
+      value:
+        calendarData?.calendar?.filter(
+          (d) => d.isHoliday && getDaysUntilHoliday(d.date) > 0,
+        ).length || 0,
       icon: Star,
       color: 'from-orange-500 to-red-500',
     },
@@ -483,7 +545,9 @@ const SchoolHoliday = () => {
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <Calendar className="w-10 h-10 text-white animate-pulse" />
           </div>
-          <p className="text-gray-600 font-medium text-lg">Loading holiday calendar...</p>
+          <p className="text-gray-600 font-medium text-lg">
+            Loading holiday calendar...
+          </p>
         </motion.div>
       </div>
     );
@@ -526,8 +590,12 @@ const SchoolHoliday = () => {
               <Gift className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">School Holidays</h1>
-              <p className="text-slate-600">Plan your breaks and stay updated with school calendar</p>
+              <h1 className="text-3xl font-bold text-slate-800">
+                School Holidays
+              </h1>
+              <p className="text-slate-600">
+                Plan your breaks and stay updated with school calendar
+              </p>
             </div>
           </div>
         </motion.div>
@@ -547,10 +615,14 @@ const SchoolHoliday = () => {
               transition={{ delay: index * 0.1 }}
               className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all"
             >
-              <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md mb-3`}>
+              <div
+                className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md mb-3`}
+              >
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
-              <div className="text-2xl font-bold text-slate-800 mb-1">{stat.value}</div>
+              <div className="text-2xl font-bold text-slate-800 mb-1">
+                {stat.value}
+              </div>
               <div className="text-sm text-slate-600">{stat.label}</div>
             </motion.div>
           ))}
@@ -603,9 +675,7 @@ const SchoolHoliday = () => {
               </div>
             </div>
 
-            <div className="p-2 md:p-8">
-              {renderCalendarGrid()}
-            </div>
+            <div className="p-2 md:p-8">{renderCalendarGrid()}</div>
           </motion.div>
 
           {/* Holiday List */}
