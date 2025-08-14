@@ -9,8 +9,10 @@ import {
 import { useSelector } from 'react-redux';
 import { getStudentById } from '../../api/AllApis';
 import { apiService } from '../../api/apiService';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const LeaveStudent = () => {
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const [classId, setClassId] = useState();
 
@@ -80,6 +82,9 @@ const LeaveStudent = () => {
         setSubmitted(true);
         setFormData({ LeaveDate: '', LeaveNotes: '' });
         setTimeout(() => setSubmitted(false), 3000);
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
       }
 
     } catch (error) {
