@@ -3,14 +3,14 @@
 // Set token in localStorage
 export const setToken = (token) => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem('RCI6IkpXVCJ9', token);
   }
 };
 
 // Get token from localStorage
 export const getToken = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('RCI6IkpXVCJ9');
   }
   return null;
 };
@@ -18,7 +18,7 @@ export const getToken = () => {
 // Remove token from localStorage
 export const removeToken = () => {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('RCI6IkpXVCJ9');
   }
 };
 

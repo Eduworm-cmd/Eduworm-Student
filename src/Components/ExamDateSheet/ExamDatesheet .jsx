@@ -236,7 +236,7 @@ const ExamDatesheet = () => {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white px-4 pt-6 pb-32"
+      className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white px-4 pt-2 pb-30"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
@@ -305,15 +305,14 @@ const ExamDatesheet = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`${stat.bgColor} rounded-2xl p-5 sm:p-6 border border-slate-200/50 shadow-sm hover:shadow-lg transition-all group cursor-pointer`}
+              className={`${stat.bgColor} bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-5 shadow-sm`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
                   <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <TrendingUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-slate-800 mb-1">{stat.value}</div>
+              <div className="text-2xl sm:text-2xl font-bold text-slate-800">{stat.value}</div>
               <div className="text-sm font-medium text-slate-600">{stat.label}</div>
             </motion.div>
           ))}

@@ -11,7 +11,7 @@ function* loginSaga(action) {
       const { token, data, message } = response.data;
       
       // Store token in localStorage
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('RCI6IkpXVCJ9', token);
       
       // Pass both user data and message to reducer
       yield put(loginSuccess({ 
