@@ -20,6 +20,7 @@ import { setUserData } from '../../redux/slice/userData';
 import { MessageCircleQuestionMark, NotebookPen, TentTree } from 'lucide-react';
 
 const AdminPanelLayout = () => {
+
   const allCards = [
     {
       title: 'Play Quiz',
@@ -138,9 +139,7 @@ const AdminPanelLayout = () => {
       <Header />
       <div className="hidden lg:flex min-h-screen bg-gray-50 w-full">
         <div className="flex-1 p-6 lg:p-8 max-w-[calc(100%-380px)]">
-          {/* Featured + Actions */}
           <div className="flex flex-col md:flex-row gap-8 mb-8">
-
             {/* Featured Card (Clickable) */}
             <Link
               to={featuredCard.url}
