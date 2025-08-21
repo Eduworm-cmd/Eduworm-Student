@@ -84,6 +84,7 @@ const CalendarCard = ({
     loading,
     attendancePercentage
 }) => {
+
     const renderCalendarGrid = () => {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth();
@@ -177,7 +178,7 @@ const CalendarCard = ({
                     )}
                 </div>
                 <div className="flex items-center gap-1">
-                    <button onClick={() => onMonthChange(-1)} className="p-1.5 hover:bg-slate-100 rounded-md transition-colors">
+                    <button onClick={() =>  (-1)} className="p-1.5 hover:bg-slate-100 rounded-md transition-colors">
                         <ChevronLeft className="w-5 h-5 text-slate-500" />
                     </button>
                     <button onClick={() => onMonthChange(1)} className="p-1.5 hover:bg-slate-100 rounded-md transition-colors">
