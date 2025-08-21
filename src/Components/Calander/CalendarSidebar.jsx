@@ -88,7 +88,7 @@ const CalendarCard = ({
     const renderCalendarGrid = () => {
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth();
-        const today = new Date();
+      const today = new Date(); 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayOfMonth = new Date(year, month, 1).getDay();
 
@@ -108,7 +108,7 @@ const CalendarCard = ({
 
             // Determine status and background color
             if (isToday) {
-                dotColor = 'bg-blue-500 text-white';
+                dotColor = ' text-white border-black bg-green-500 border-2 ';
                 status = 'Today';
             } else if (dayData?.isHoliday) {
                 dotColor = 'bg-purple-500 text-white';
@@ -264,9 +264,7 @@ const QuickActionsCard = ({onApplyLeave}) => (
     </div>
 );
 
-// ========================================================================
-// 🏛️ MAIN COMPONENT
-// ========================================================================
+
 const DashboardRightPanel = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [calendarData, setCalendarData] = useState([]);
@@ -307,6 +305,7 @@ const DashboardRightPanel = () => {
             setLoading(false);
             return;
         }
+        
 
         try {
             setLoading(true);

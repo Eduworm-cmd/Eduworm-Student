@@ -17,6 +17,7 @@ import { Events } from './Components/Events/Events';
 import { TimeTable } from './Components/TimeTable/TImetable';
 import Askdoubts from './Components/Askdoubts/Askdoubts';
 import StudentChatSystem from './Components/StudentChatSystem/StudentChatSystem';
+import NotFound from './Components/404Page/NotFound ';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<StudentPortalLogin />} />
+          <Route path="*" element={<NotFound />} />
           <Route path="/quiz/:id" element={<PlayQuize />} />
 
           {/* Main Layout for Student */}
@@ -42,7 +44,14 @@ function App() {
           </Route>
 
           {/* Protected Route for Admin Panel */}
-          <Route path="/" element={<UserProtectedRoute><AdminPanelLayout /> </UserProtectedRoute>}>
+          <Route
+            path="/"
+            element={
+              <UserProtectedRoute>
+                <AdminPanelLayout />{' '}
+              </UserProtectedRoute>
+            }
+          >
             <Route index element={<Assignment />} />
             <Route path="ExamDatesheet" element={<ExamDatesheet />} />
             <Route path="chat" element={<StudentChatSystem />} />
