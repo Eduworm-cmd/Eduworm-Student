@@ -5,7 +5,6 @@ export const authApi = {
         return apiService.post('superStudent/student-login', credentials);
     }
 }
-
 export const getStudentById =(id)=>{
     return apiService.get(`superStudent/ById/${id}`);
 }
