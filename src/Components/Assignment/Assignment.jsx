@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PlayCircle, FileText, Calendar, MoreHorizontal, X, Youtube, Image as ImageIcon, Clock, BookOpen, Video, ChevronRight, Star, TrendingUp, Award, Target, Zap, Filter, Search, Bell, User, Settings, Home, BarChart3, Brain, Flame, CheckCircle2, AlertTriangle, ArrowUp } from 'lucide-react';
 import { apiService } from '../../api/apiService';
 import { useSelector } from 'react-redux';
@@ -36,7 +36,38 @@ const useAssignments = () => {
   return { assignments, loading };
 };
 
-const FilterBar = ({ onFilterChange }) => {
+const WeekDayCard = ({ day, isSelected, onClick }) => (
+  <div onClick={onClick} className={`relative overflow-hidden rounded-xl sm:rounded-2xl p-1 sm:p-4 md:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 
+            ${isSelected
+      ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
+      : day.isToday
+        ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
+        : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
+    }`}>
+    {isSelected && (
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-2 right-2 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 border-2 border-white rounded-full"></div>
+        <div className="absolute bottom-2 left-2 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border border-white rounded-full"></div>
+      </div>
+    )}
+
+    <div className="relative z-10 text-center">
+      <div className={`font-semibold mb-1  text-[10px] sm:text-xs ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-600' : 'text-gray-500'}`}>
+        {day.isToday ? 'TODAY' : day.day.toUpperCase()}
+      </div>
+
+      <div className={`font-bold mb-1 text-xl sm:text-2xl md:text-3xl ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+        {day.date}
+      </div>
+
+      <div className={`hidden sm:block font-medium text-[11px] sm:text-sm ${isSelected ? 'text-blue-100' : day.isToday ? 'text-blue-700' : 'text-gray-600'}`}>
+        {day.dayFull.toLowerCase()}
+      </div>
+    </div>
+  </div>
+);
+
+const FilterBar = ({ onFilterChange, availableSubjects }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200/50 p-4 sm:p-6 mb-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -50,31 +81,31 @@ const FilterBar = ({ onFilterChange }) => {
             className="w-full sm:w-auto px-4 py-2 bg-gray-100 rounded-xl border-0 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-violet-500"
             onChange={(e) => onFilterChange?.('subject', e.target.value)}
           >
-            <option>All Subjects</option>
-            <option>Mathematics</option>
-            <option>Science</option>
-            <option>English</option>
-            <option>History</option>
+            <option value="">All Subjects</option>
+            {availableSubjects.map((subject) => (
+              <option key={subject} value={subject}>{subject}
+              </option>
+            ))}
           </select>
 
           <select
             className="w-full sm:w-auto px-4 py-2 bg-gray-100 rounded-xl border-0 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-violet-500"
             onChange={(e) => onFilterChange?.('progress', e.target.value)}
           >
-            <option>All Progress</option>
-            <option>Not Started</option>
-            <option>In Progress</option>
-            <option>Completed</option>
+            <option value="">All Progress</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
           </select>
 
           <select
             className="w-full sm:w-auto px-4 py-2 bg-gray-100 rounded-xl border-0 text-sm font-medium text-gray-700 focus:ring-2 focus:ring-violet-500"
             onChange={(e) => onFilterChange?.('type', e.target.value)}
           >
-            <option>All Types</option>
-            <option>Video Course</option>
-            <option>Study Material</option>
-            <option>Assignment</option>
+            <option value="">All Types</option>
+            <option value="PlayList">PlayList</option>
+            <option value="Single Video">Single Video</option>
+            <option value="Quiz">Quiz</option>
           </select>
         </div>
       </div>
@@ -83,8 +114,6 @@ const FilterBar = ({ onFilterChange }) => {
 };
 
 const ModernAssignmentCard = ({ assignment, onOpen }) => {
-  console.log("Assignment Card Rendered:", assignment);
-
   const hasPlaylist = assignment.playlistIds && assignment.playlistIds.length > 0;
   const hasContent = assignment.content && assignment.content.length > 0;
 
@@ -586,17 +615,93 @@ const ContentModal = ({ isOpen, onClose, assignment }) => {
 const AssignmentBoard = () => {
   const { assignments, loading } = useAssignments();
   const location = useLocation();
+  const [selectedDay, setSelectedDay] = useState(null);
+
   const [modalState, setModalState] = useState({
     isOpen: false,
     assignment: null,
     modalType: null
   });
   const [filteredAssignments, setFilteredAssignments] = useState([]);
+  const [filters, setFilters] = useState({
+    subject: '',
+    progress: '',
+    type: ''
+  });
 
-  // Update filtered assignments when assignments change
-  useEffect(() => {
-    setFilteredAssignments(assignments);
+  // Generate available subjects from API data
+  const availableSubjects = React.useMemo(() => {
+    const subjects = new Set();
+    assignments.forEach(assignment => {
+      if (assignment.playlistIds && assignment.playlistIds.length > 0) {
+        const subject = assignment.playlistIds[0]?.Subject?.title;        
+        if (subject) {
+          subjects.add(subject);
+        }
+      } 
+      // else if (assignment.content && assignment.content.length > 0) {
+      //   subjects.add('Study Material');
+      // }
+    });
+    return Array.from(subjects);
   }, [assignments]);
+
+  // Filter assignments by selected day
+  const getAssignmentsForDay = (dayDate) => {
+    if (!dayDate) return assignments;
+    
+    return assignments.filter(assignment => {
+      const assignmentDate = new Date(assignment.notificationTime).toISOString().split('T')[0];
+      return assignmentDate === dayDate;
+    });
+  };
+
+  // Apply all filters
+  const applyFilters = React.useCallback((dayAssignments) => {
+    let filtered = dayAssignments;
+
+    // Subject filter
+    if (filters.subject) {
+      filtered = filtered.filter(assignment => {
+        const hasPlaylist = assignment.playlistIds && assignment.playlistIds.length > 0;
+        const subject = hasPlaylist ? 
+          assignment.playlistIds[0]?.Subject?.title : 
+          (assignment.content && assignment.content.length > 0) ? 'Study Material' : 'General';
+        return subject === filters.subject;
+      });
+    }
+
+    // Type filter
+    if (filters.type) {
+      console.log('Applying type filter:', filters.type);
+      
+      filtered = filtered.filter(assignment => {
+        const hasPlaylist = assignment.playlistIds && assignment.playlistIds.length > 0;
+        
+        const hasContent = assignment.content && assignment.content.length > 0;
+        
+        if (filters.type === 'PlayList') return hasPlaylist;
+        if (filters.type === 'Single Video') return hasContent && !hasPlaylist;
+        if (filters.type === 'Quiz') return !hasPlaylist && !hasContent;
+        return true;
+      });
+    }
+
+    // Progress filter (placeholder - you can implement based on your progress tracking)
+    if (filters.progress) {
+      // Add your progress filtering logic here
+      // For now, we'll just return all assignments
+    }
+
+    return filtered;
+  }, [filters]);
+
+  // Update filtered assignments when day or filters change
+  useEffect(() => {
+    const dayAssignments = getAssignmentsForDay(selectedDay);
+    const filtered = applyFilters(dayAssignments);
+    setFilteredAssignments(filtered);
+  }, [selectedDay, assignments, applyFilters]);
 
   const handleOpenModal = (assignment) => {
     const hasPlaylist = assignment.playlistIds && assignment.playlistIds.length > 0;
@@ -622,30 +727,55 @@ const AssignmentBoard = () => {
   };
 
   const handleFilterChange = (filterType, value) => {
-    if (value === '' || value.includes('All')) {
-      setFilteredAssignments(assignments);
-      return;
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      subject: '',
+      progress: '',
+      type: ''
+    });
+  };
+
+  const showCards = location.pathname === '/main/Assignment';
+
+  const generateWeekDays = useCallback(() => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+    
+    const weekDays = [];
+
+    for (let i = 0; i < 5; i++) {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+
+      weekDays.push({
+        date: day.getDate(),
+        day: day.toLocaleString('en', { weekday: 'long' }),
+        dayFull: day.toLocaleString('en', { weekday: 'short' }),
+        isToday: day.toDateString() === today.toDateString(),
+        todayFullDate: today.toISOString().split('T')[0],
+        fullDate: day.toISOString().split('T')[0],
+      });
     }
 
-    const filtered = assignments.filter(assignment => {
-      switch (filterType) {
-        case 'subject':
-          const subject = assignment.playlistIds?.[0]?.Subject?.title || 'General';
-          return subject.toLowerCase().includes(value.toLowerCase());
-        case 'type':
-          const hasPlaylist = assignment.playlistIds && assignment.playlistIds.length > 0;
-          const hasContent = assignment.content && assignment.content.length > 0;
-          if (value === 'Video Course') return hasPlaylist;
-          if (value === 'Study Material') return hasContent;
-          if (value === 'Assignment') return !hasPlaylist && !hasContent;
-          return true;
-        default:
-          return true;
-      }
-    });
+    return weekDays;
+  }, []);
 
-    setFilteredAssignments(filtered);
-  };
+  const [weekDays] = useState(() => generateWeekDays());
+
+  // Set today as default selected day
+  useEffect(() => {
+    if (!selectedDay && weekDays.length > 0) {
+      const today = weekDays.find(day => day.isToday);
+      setSelectedDay(today ? today.fullDate : weekDays[0].fullDate);
+    }
+  }, [selectedDay, weekDays]);
 
   if (loading) {
     return (
@@ -670,7 +800,8 @@ const AssignmentBoard = () => {
     active: assignments.filter(a => a.isActive).length
   };
 
-  const showCards = location.pathname === '/main/Assignment';
+  const selectedDayObj = weekDays.find(day => day.fullDate === selectedDay);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -781,33 +912,44 @@ const AssignmentBoard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
               Your Active Assignments
+              {selectedDayObj && (
+                <span className="text-lg font-normal text-gray-600 ml-3">
+                  for {selectedDayObj.isToday ? 'Today' : selectedDayObj.day + ', ' + selectedDayObj.date}
+                </span>
+              )}
             </h2>
             <p className="text-sm sm:text-base text-gray-600">
               Continue your learning journey with these personalized courses
             </p>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-              <ArrowUp className="w-4 h-4" />
-              Sort
-            </button>
-            <button className="w-full sm:w-auto px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors flex items-center justify-center gap-2">
-              <Search className="w-4 h-4" />
-              Search
-            </button>
+        {/* Week Day Selector */}
+        <div className="mb-8">
+          <div className="grid grid-cols-5 gap-2 sm:gap-4">
+            {weekDays.map((day, index) => (
+              <WeekDayCard
+                key={index}
+                day={day}
+                isSelected={selectedDay === day.fullDate}
+                onClick={() => setSelectedDay(day.fullDate)}
+              />
+            ))}
           </div>
         </div>
 
         {/* Filter Bar */}
-        <FilterBar onFilterChange={handleFilterChange} />
+        <FilterBar 
+          onFilterChange={handleFilterChange} 
+          availableSubjects={availableSubjects}
+        />
+
         {/* Assignment Grid */}
         {filteredAssignments.length > 0 ? (
           <div className={`grid grid-cols-1 sm:grid-cols-2 ${showCards ? 'xl:grid-cols-3' : 'xl:grid-cols-2'} gap-6 sm:gap-8`}>
@@ -825,19 +967,36 @@ const AssignmentBoard = () => {
               <BookOpen className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {assignments.length === 0 ? 'No assignments found' : 'No matching assignments'}
+              {assignments.length === 0 ? 'No assignments found' : 
+               selectedDayObj ? `No assignments for ${selectedDayObj.isToday ? 'today' : selectedDayObj.day}` :
+               'No matching assignments'}
             </h3>
             <p className="text-gray-600 mb-6">
               {assignments.length === 0
                 ? "You don't have any active assignments at the moment."
+                : selectedDayObj && getAssignmentsForDay(selectedDay).length === 0
+                ? `No assignments scheduled for ${selectedDayObj.isToday ? 'today' : 'this day'}. Try selecting a different day.`
                 : "Try adjusting your filters to see more assignments."}
             </p>
-            <button
-              onClick={() => setFilteredAssignments(assignments)}
-              className="px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors"
-            >
-              {assignments.length === 0 ? 'Browse Courses' : 'Clear Filters'}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {(filters.subject || filters.type || filters.progress) && (
+                <button
+                  onClick={clearFilters}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  Clear Filters
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  const today = weekDays.find(day => day.isToday);
+                  if (today) setSelectedDay(today.fullDate);
+                }}
+                className="px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors"
+              >
+                {assignments.length === 0 ? 'Browse Courses' : 'View Today\'s Assignments'}
+              </button>
+            </div>
           </div>
         )}
       </div>
