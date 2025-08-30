@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { apiService } from '../api/apiService';
-import logo from "../assets/IMG_6340-removebg-preview.png"
+import Logo from "../assets/IMG_6340-removebg-preview.png"
 
 const firebaseConfig = {
   apiKey: "AIzaSyAPxgpKfCJHm2rWeKt2-lzb-9fF7T0UmJo",
@@ -57,7 +57,7 @@ if (messagingSupport && messaging) {
       const { title, body } = payload.notification;
       new Notification(title, {
         body,
-        icon: logo,
+        icon: Logo,
       });
     }
   });
