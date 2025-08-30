@@ -3,6 +3,7 @@ import { Play, Search, BookOpen, Frown, Filter, Grid3X3, List, Clock, Users, Sta
 import { useSelector } from 'react-redux';
 import { apiService } from '../../api/apiService';
 import Loader from '../../Loader/Loader';
+import { useNavigate } from 'react-router-dom';
 
 const useTypewriter = (texts, options = {}) => {
   const { typingSpeed = 100, deletingSpeed = 50, pauseDuration = 2000 } = options;
@@ -58,17 +59,18 @@ const HeroSection = memo(({ featuredQuiz }) => {
               <Star size={12} fill="currentColor" /> Featured
             </div>
             <div className="flex gap-4">
-              <img 
-                src={featuredQuiz.avatar || 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop'} 
-                alt={featuredQuiz.title} 
-                className="w-24 h-24 rounded-lg object-cover flex-shrink-0" 
+              <img
+                src={featuredQuiz.avatar || 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop'}
+                alt={featuredQuiz.title}
+                className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
               />
               <div className="flex-grow">
                 <h3 className="font-bold text-gray-800">{featuredQuiz.title}</h3>
                 <p className="text-sm text-gray-500 mt-1 line-clamp-2">{featuredQuiz.description}</p>
               </div>
             </div>
-            <button className="mt-4 w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 hover:bg-blue-700 group-hover:shadow-lg group-hover:shadow-blue-500/30">
+            <button
+              className="mt-4 w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 hover:bg-blue-700 group-hover:shadow-lg group-hover:shadow-blue-500/30">
               Start Now <ArrowRight size={16} />
             </button>
           </div>
@@ -133,9 +135,9 @@ const FilterBar = memo(({ onFilterChange, onSortChange, onLayoutChange, layout, 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-semibold text-gray-700 block mb-2">Subject</label>
-            <select 
+            <select
               value={filters.subject}
-              onChange={(e) => setFilters(prev => ({ ...prev, subject: e.target.value }))} 
+              onChange={(e) => setFilters(prev => ({ ...prev, subject: e.target.value }))}
               className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -148,9 +150,8 @@ const FilterBar = memo(({ onFilterChange, onSortChange, onLayoutChange, layout, 
                 <button
                   key={opt.id}
                   onClick={() => setSortBy(opt.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg text-sm transition ${
-                    sortBy === opt.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg text-sm transition ${sortBy === opt.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                 >
                   <opt.icon size={14} /> {opt.name}
                 </button>
@@ -175,14 +176,15 @@ const StatIcon = memo(({ icon: Icon, value, label }) => (
 const QuizCard = memo(({ quiz, layout }) => {
   const questionCount = quiz.questions ? quiz.questions.length : 0;
   const subjectTitle = quiz.subject?.title || quiz.topic || 'General';
+  const navigation = useNavigate();
 
   if (layout === 'list') {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-4 flex gap-6 items-center hover:shadow-lg hover:border-blue-300 transition-all duration-300 group">
-        <img 
-          src={quiz.avatar || 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop'} 
-          alt={quiz.title} 
-          className="w-32 h-32 rounded-lg object-cover flex-shrink-0" 
+        <img
+          src={quiz.avatar || 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop'}
+          alt={quiz.title}
+          className="w-32 h-32 rounded-lg object-cover flex-shrink-0"
         />
         <div className="flex-grow">
           <div className="flex justify-between items-start">
@@ -197,7 +199,8 @@ const QuizCard = memo(({ quiz, layout }) => {
               <StatIcon icon={BookOpen} value={questionCount} label="Questions" />
               <StatIcon icon={Brain} value={subjectTitle} label="Subject" />
             </div>
-            <button className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+            <button
+              className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
               Start <ArrowRight size={16} />
             </button>
           </div>
@@ -209,10 +212,10 @@ const QuizCard = memo(({ quiz, layout }) => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden group hover:shadow-lg hover:border-blue-300 transition-all duration-300">
       <div className="relative h-48 overflow-hidden">
-        <img 
-          src={quiz.avatar || 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop'} 
-          alt={quiz.title} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+        <img
+          src={quiz.avatar || 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=300&fit=crop'}
+          alt={quiz.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute top-3 right-3 flex items-center gap-1 bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-bold">
           <BookOpen size={12} /> {questionCount}
@@ -231,7 +234,9 @@ const QuizCard = memo(({ quiz, layout }) => {
           <StatIcon icon={BookOpen} value={questionCount} label="Questions" />
           <StatIcon icon={Brain} value={subjectTitle} label="Subject" />
         </div>
-        <button className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 hover:bg-blue-700 group-hover:shadow-lg group-hover:shadow-blue-500/30">
+        <button
+          onClick={() => navigation(`/quiz/${quiz._id}`)}
+          className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 hover:bg-blue-700 group-hover:shadow-lg group-hover:shadow-blue-500/30">
           Start Quiz <Play size={16} />
         </button>
       </div>
@@ -248,7 +253,7 @@ const QuizInterface = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [subjects, setSubjects] = useState(['All']);
-  
+
   // Get studentId from Redux store
   const studentId = useSelector((state) => {
     try {
@@ -262,7 +267,7 @@ const QuizInterface = () => {
   // Fetch quizzes from API
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchQuizzes = async () => {
       if (!studentId) {
         setLoading(false);
@@ -272,11 +277,11 @@ const QuizInterface = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await apiService.get(`quize/student/${studentId}`);
-        
+
         if (!isMounted) return;
-        
+
         if (response.data?.success && Array.isArray(response.data.data)) {
           const formattedQuizzes = response.data.data.map((quiz) => ({
             _id: quiz._id,
@@ -319,7 +324,7 @@ const QuizInterface = () => {
     };
 
     fetchQuizzes();
-    
+
     return () => {
       isMounted = false;
     };
@@ -335,7 +340,7 @@ const QuizInterface = () => {
   const handleFilterChange = useCallback((filters) => {
     setCurrentPage(1);
     let tempQuizzes = [...allQuizzes];
-    
+
     // Apply search filter
     if (filters.searchTerm && filters.searchTerm.trim()) {
       const searchLower = filters.searchTerm.toLowerCase().trim();
@@ -344,15 +349,15 @@ const QuizInterface = () => {
         q.description.toLowerCase().includes(searchLower)
       );
     }
-    
+
     // Apply subject filter
     if (filters.subject !== 'All') {
-      tempQuizzes = tempQuizzes.filter(q => 
-        (q.subject?.title === filters.subject) || 
+      tempQuizzes = tempQuizzes.filter(q =>
+        (q.subject?.title === filters.subject) ||
         (q.topic === filters.subject)
       );
     }
-    
+
     setFilteredQuizzes(tempQuizzes);
   }, [allQuizzes]);
 
@@ -379,7 +384,7 @@ const QuizInterface = () => {
 
   const quizzesPerPage = layout === 'grid' ? 9 : 5;
   const featuredQuiz = useMemo(() => allQuizzes[0], [allQuizzes]);
-  
+
   const currentQuizzes = useMemo(() => {
     const first = (currentPage - 1) * quizzesPerPage;
     const last = first + quizzesPerPage;
@@ -399,8 +404,8 @@ const QuizInterface = () => {
           <Frown size={48} className="mx-auto text-red-400" />
           <h3 className="mt-4 text-xl font-bold text-gray-800">Error Loading Quizzes</h3>
           <p className="mt-2 text-gray-600">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Try Again
@@ -415,10 +420,10 @@ const QuizInterface = () => {
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-100/50 to-transparent -z-10" />
       <main className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <HeroSection featuredQuiz={featuredQuiz} />
-        <FilterBar 
-          onFilterChange={handleFilterChange} 
-          onSortChange={handleSortChange} 
-          onLayoutChange={handleLayoutChange} 
+        <FilterBar
+          onFilterChange={handleFilterChange}
+          onSortChange={handleSortChange}
+          onLayoutChange={handleLayoutChange}
           layout={layout}
           subjects={subjects}
         />

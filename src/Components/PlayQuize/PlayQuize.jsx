@@ -6,6 +6,7 @@ import {
   Trophy,
   RefreshCw,
   ArrowRight,
+  LogOut,
 } from 'lucide-react';
 import { apiService } from '../../api/apiService';
 import { useParams } from 'react-router-dom';
@@ -149,19 +150,19 @@ const PlayQuize = () => {
   if (showResults) {
     const results = calculateResults();
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-2xl mx-auto">
+      <div className="max-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-8xl mx-auto">
           <div className="bg-white rounded-2xl shadow-md p-8 text-center">
-            <div className="mb-8">
-              <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            <div className="mb-6">
+              <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 Quiz Completed!
               </h2>
               <p className="text-gray-600">{quizData.title}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-green-50 rounded-xl p-6">
+              <div className="bg-green-50 rounded-xl p-4">
                 <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-green-600">
                   {results.correct}
@@ -178,7 +179,7 @@ const PlayQuize = () => {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-6 mb-8">
+            <div className="bg-gray-50 rounded-xl p-1">
               <p className="text-4xl font-bold text-gray-800 mb-2">
                 {results.percentage}%
               </p>
@@ -218,187 +219,162 @@ const PlayQuize = () => {
   const currentQ = quizData?.questions?.[currentQuestion];
   const selectedAnswer = currentQ ? selectedAnswers[currentQ._id] : null;
 
-
+  const handleGoBack = () =>{
+     window.history.back();
+  }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-sm shadow-sm p-8 mb-6">
-          <div className="bg-white rounded-sm shadow-lg p-6 mb-6 ">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {quizData.title}
-                </h1>
-                <p className="text-gray-600 text-1xl">{quizData.description}</p>
+
+    <div className="max-w-8xl mx-auto min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header */}
+      <div className="rounded-sm shadow-sm p-2 mb-4">
+        <div className="bg-white rounded-sm shadow-lg mb-2 px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">{quizData.title}</h1>
+              <p className="text-gray-600 text-1xl">{quizData.description}</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-2">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-2xl text-gray-600 sm-text-sm">
+                  Question ({currentQuestion + 1} / {quizData?.questions?.length}) &nbsp; &nbsp;
+                </span>
+                <span className="text-2xl text-gray-600">
+                  {Math.round(((currentQuestion + 1) / quizData?.questions?.length) * 100)}% Complete
+                </span>
               </div>
-
-              <div className="bg-white rounded-2xl  p-6 ">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-2xl text-gray-600 sm-text-sm">
-                    Question ({currentQuestion + 1} /{' '}
-                    {quizData?.questions?.length}) &nbsp; &nbsp;
-                  </span>
-
-                  <span className="text-2xl text-gray-600">
-                    {Math.round(
-                      ((currentQuestion + 1) / quizData?.questions?.length) *
-                        100,
-                    )}
-                    % Complete
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 ">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${
-                        ((currentQuestion + 1) / quizData?.questions?.length) *
-                        100
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
-                  <Clock className="h-10 w-10 text-blue-500" />
-                  <span className="font-semibold text-blue-700">
-                    {formatTime(timeLeft)}
-                  </span>
-                </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${((currentQuestion + 1) / quizData?.questions?.length) * 100}%`,
+                  }}
+                ></div>
               </div>
             </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
+                <Clock className="h-10 w-10 text-blue-500" />
+                <span className="font-semibold text-blue-700">{formatTime(timeLeft)}</span>
+              </div>
+              <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer" onClick={handleGoBack}>
+                <LogOut className="h-10 w-10 text-blue-500" />
+                <span className="font-semibold text-blue-700">Exit</span>
+              </div>
+
+            </div>
           </div>
+        </div>
 
-          {/* Question */}
-          <div className="bg-white rounded-sm p-8 mb-6">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-20 ">
-              (Q).  {currentQ?.question}
-            </h2>
+        {/* Question */}
+        <div className="bg-white rounded-sm p-8 mb-2 h-110 max-h-110">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-9">
+            (Q). {currentQ?.question}
+          </h2>
 
-            <div
-              className={`grid grid-cols-1 sm:grid-cols-2 gap-4 gap-y-12 ${
-                currentQ?.options.every((option) => option.image)
-                  ? 'justify-items-center'
-                  : ''
+          <div
+            className={`grid grid-cols-1 sm:grid-cols-2 gap-4 gap-y-12 ${currentQ?.options.every((option) => option.image) ? 'justify-items-center' : ''
               }`}
-            >
-              {currentQ?.options.map((option, index) => {
-                const isSelected = selectedAnswer === index;
+          >
+            {currentQ?.options.map((option, index) => {
+              const isSelected = selectedAnswer === index;
 
-                if (option.image) {
-                  // Render image option
-                  return (
-                    <div
-                      key={option._id || index}
-                      className={`cursor-pointer shadow-2xl transition-all rounded-2xl overflow-hidden duration-200 ${
-                        isSelected ? 'border-4 border-blue-400 rounded-2x1' : ''
-                      }`}
-                      style={{
-                        width: '350px',
-                        height: '150px',
-                        boxShadow: '0px 0px 15px 7px rgba(132,123,123,0.56)',
-                      }}
-                      onClick={() => handleAnswerSelect(currentQ._id, index)}
-                    >
-                      <div className="w-full h-full flex items-center justify-center ">
-                        <img
-                          src={option.image}
-                          alt={`Option ${index + 1}`}
-                          className="w-full h-full object-cover "
-                        />
-                      </div>
-                    </div>
-                  );
-                } else {
-                  // Render text option
-                  return (
-                    <div
-                      key={option._id || index}
-                      className={`p-6 rounded-md border-2 cursor-pointer transition-all duration-200 ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                      onClick={() => handleAnswerSelect(currentQ._id, index)}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                            isSelected
-                              ? 'border-blue-500 bg-blue-500'
-                              : 'border-gray-300'
-                          }`}
-                        >
-                          {isSelected && (
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
-                          )}
-                        </div>
-                        <span className="text-gray-700 font-medium">
-                          {option.text}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                }
-              })}
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <div className="bg-white rounded-sm p-6">
-            <div className="flex justify-between items-center">
-              <button
-                onClick={handlePrevQuestion}
-                disabled={currentQuestion === 0}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  currentQuestion === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-500 text-white hover:bg-gray-600'
-                }`}
-              >
-                Previous
-              </button>
-
-              <div className="flex gap-2">
-                {quizData?.questions?.map((_, index) => (
+              if (option.image) {
+                // Render image option
+                return (
                   <div
-                    key={index}
-                    className={`w-3 h-3 rounded-full ${
-                      index === currentQuestion
-                        ? 'bg-blue-500'
-                        : selectedAnswers[quizData.questions[index]._id] !==
-                          undefined
+                    key={option._id || index}
+                    className={`w-full sm:w-[350px] h-[130px] cursor-pointer shadow-2xl transition-all rounded-2xl overflow-hidden duration-200 ${isSelected ? 'border-4 border-blue-400' : ''
+                      }`}
+                    onClick={() => handleAnswerSelect(currentQ._id, index)}
+                  >
+                    <div className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={option.image}
+                        alt={`Option ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                );
+              } else {
+                // Render text option
+                return (
+                  <div
+                    key={option._id || index}
+                    className={`p-6 rounded-md border-2 cursor-pointer transition-all duration-200 ${isSelected
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    onClick={() => handleAnswerSelect(currentQ._id, index)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                          }`}
+                      >
+                        {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      </div>
+                      <span className="text-gray-700 font-medium">{option.text}</span>
+                    </div>
+                  </div>
+                );
+              }
+            })}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="bg-white rounded-sm p-4">
+          <div className="flex justify-between items-center">
+            <button
+              onClick={handlePrevQuestion}
+              disabled={currentQuestion === 0}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${currentQuestion === 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-500 text-white hover:bg-gray-600'
+                }`}
+            >
+              Previous
+            </button>
+
+            <div className="flex gap-2 mx-auto">
+              {quizData?.questions?.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-3 h-3 rounded-full ${index === currentQuestion
+                      ? 'bg-blue-500'
+                      : selectedAnswers[quizData.questions[index]._id] !== undefined
                         ? 'bg-green-500'
                         : 'bg-gray-300'
                     }`}
-                  />
-                ))}
-              </div>
-
-              {currentQuestion === quizData?.questions?.length - 1 ? (
-                <button
-                  onClick={handleSubmitQuiz}
-                  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
-                >
-                  Submit Quiz
-                </button>
-              ) : (
-                <button
-                  onClick={handleNextQuestion}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
-                >
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
+                />
+              ))}
             </div>
+
+            {currentQuestion === quizData?.questions?.length - 1 ? (
+              <button
+                onClick={handleSubmitQuiz}
+                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+              >
+                Submit Quiz
+              </button>
+            ) : (
+              <button
+                onClick={handleNextQuestion}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
+              >
+                Next
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
     </div>
+
+
   );
 };
 

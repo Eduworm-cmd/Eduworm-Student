@@ -1,19 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
+import { apiService } from '../api/apiService';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDJKLPANcsO1FoDITnaJ3TX-83-RG48e9g",
-  authDomain: "eduworm-14688.firebaseapp.com",
-  projectId: "eduworm-14688",
-  storageBucket: "eduworm-14688.firebasestorage.app",
-  messagingSenderId: "705534579139",
-  appId: "1:705534579139:web:7c28b3b9deb5f52cc72d76",
-  measurementId: "G-1PS8FYSL7Q"
+  apiKey: "AIzaSyAPxgpKfCJHm2rWeKt2-lzb-9fF7T0UmJo",
+  authDomain: "eduworm-db533.firebaseapp.com",
+  projectId: "eduworm-db533",
+  storageBucket: "eduworm-db533.appspot.com", 
+  messagingSenderId: "409752336553",
+  appId: "1:409752336553:web:249d2ee2b7b725bbee51b8",
+  measurementId: "G-GP1QTEJV5R"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 
-// Add support check to avoid "unsupported-browser" error
 let messaging;
 const messagingSupport = await isSupported();
 if (messagingSupport) {
@@ -22,34 +22,42 @@ if (messagingSupport) {
 
 export { messaging, getToken, onMessage };
 
-// Request permission only if supported and messaging is initialized
-export const requestPermission = async () => {
+
+export const requestPermission = async (userId) => {
   if (!messagingSupport || !messaging) {
-    console.warn('Firebase messaging is not supported in this browser.');
+    console.warn('❌ Firebase messaging not supported.');
     return;
   }
 
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      console.log('Notification permission granted.');
-
       const token = await getToken(messaging, {
-        vapidKey: 'BDYM5hClwc4gN92zyA6yrXqShKHLV-DhkanFyvKT2SKCPhq05Au-MHIyI8GrxRTBXjSbCDwzTfDufPYwpw6U4Ag'
+        vapidKey: 'BGtNoSSNnQ7waJbIqM2Qa_otSzocOh2gx6xhtU416zstQRhwRiUIZIDSV70lsolRc8YjvLmJAMnA6lWEI8YS_d0'
       });
 
-      console.log("FCM Token:", token);
+      console.log('✅ FCM Token:', token);
 
-      const userId = "687741a970653e04bafe3911";
-      await fetch('http://192.168.1.2:4000/api/fcm/save-fcm-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, fcmToken: token })
-      });
+      await apiService.post('fcm/save-fcm-token', { userId, fcmToken: token });
     } else {
-      console.warn('Notification permission denied:', permission);
+      console.warn('🚫 Notification permission denied:', permission);
     }
   } catch (error) {
-    console.error('Error getting permission or token:', error);
+    console.error('🔥 Error getting FCM token:', error);
   }
 };
+
+// ✅ Show notification manually if site is open
+if (messagingSupport && messaging) {
+  onMessage(messaging, (payload) => {
+    console.log('📩 Foreground message:', payload);
+
+    if (document.visibilityState === 'visible' && Notification.permission === 'granted') {
+      const { title, body } = payload.notification;
+      new Notification(title, {
+        body,
+        icon: '/logo192.png'
+      });
+    }
+  });
+}

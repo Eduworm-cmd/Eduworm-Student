@@ -174,17 +174,15 @@ const CalendarCard = ({
 
       // 4) Final class: status fill (if any) + today outline (if today) OR fallback
       const circleClass =
-        `w-8 h-8 flex items-center justify-center rounded-full font-semibold ${
-          statusClass || fallbackText
-        } ${todayOutlineClass}`.trim();
+        `w-8 h-8 flex items-center justify-center rounded-full font-semibold ${statusClass || fallbackText
+          } ${todayOutlineClass}`.trim();
 
       days.push(
         <div
           key={day}
           onClick={() => !isFutureDate && onDateSelect(date)}
-          className={`flex flex-col items-center cursor-pointer py-1 transition-all relative group ${
-            isFutureDate ? 'cursor-not-allowed' : ''
-          }`}
+          className={`flex flex-col items-center cursor-pointer py-1 transition-all relative group ${isFutureDate ? 'cursor-not-allowed' : ''
+            }`}
         >
           <span className={circleClass}>{day}</span>
           {(isToday ? status || 'Today' : status) && (
@@ -235,9 +233,10 @@ const CalendarCard = ({
       </div>
 
       <div className="grid grid-cols-7 gap-y-2 text-center text-xs font-medium text-slate-400 mb-2">
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-          <div key={day}>{day}</div>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+          <div key={`${day}-${index}`}>{day}</div>
         ))}
+
       </div>
 
       {loading ? (

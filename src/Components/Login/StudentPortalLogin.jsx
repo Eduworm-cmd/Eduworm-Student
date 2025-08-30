@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearError, loginRequest } from '../../redux/actions/auth.actions';
 import { enqueueSnackbar } from 'notistack';
+import { requestPermission } from '../../config/firebase';
 
 
 export default function StudentPortalLogin() {
@@ -17,7 +18,7 @@ export default function StudentPortalLogin() {
     email: '',
     password: '',
   });
-
+  
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -29,7 +30,8 @@ export default function StudentPortalLogin() {
   useEffect(() => {
     if (success && user) {
       setFormData({ email: '', password: '' });
-      navigate('/');
+      navigate('/');      
+      requestPermission(user?.studentId);
     }
 
     if (error) {
