@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
-  Mail,
   X,
   BookOpen,
   CalendarCheck,
@@ -13,8 +12,6 @@ import {
   LayoutGrid,
   CheckSquare,
   Bell,
-  Sparkles,
-  Loader2,
   Home,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -22,6 +19,7 @@ import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import img1 from "../../assets/IMG_6340-removebg-preview.png";
 import Notification from "../Notification/Notification";
+import useNotification from "../Notification/useNotification";
 
 const WelcomeBanner = () => {
   const student = useSelector((state) => state.userData?.user) || "Sagar";
@@ -45,27 +43,6 @@ const WelcomeBanner = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  const sidebarVariants = {
-    hidden: { x: "100%", opacity: 0 },
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-      },
-    },
-    exit: {
-      x: "100%",
-      opacity: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-      },
-    },
-  };
   return (
     <motion.div
       variants={bannerVariants}
@@ -117,6 +94,10 @@ const Header = () => {
   const location = useLocation();
   const navRef = useRef(null);
   const [activePillStyle, setActivePillStyle] = useState({});
+
+  // Initialize notification hook here to establish socket connection
+  const { unreadCount } = useNotification(openNotification, () => setOpenNotification(false));
+
   const bottomNavItems = useMemo(
     () => [
       {
@@ -229,15 +210,16 @@ const Header = () => {
           onClick={() => navigate("/")}
         >
           <img src={img1} alt="Logo" className="h-10 w-auto" />
-          {/* <div className="hidden sm:flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">Welcome to</span>
-            <h1 className="text-lg font-bold text-slate-800 -mt-0.5">{SchoolName}</h1>
-          </div> */}
         </div>
 
         <div className="flex items-center space-x-1 sm:space-x-2">
           {[
-            { icon: <Bell />, action: () => setOpenNotification(true) },
+            { 
+              icon: <Bell />, 
+              action: () => setOpenNotification(true),
+              hasNotification: unreadCount > 0,
+              notificationCount: unreadCount
+            },
             { icon: <User2 />, action: () => navigate("/main/profile") },
           ].map((item, index) => (
             <motion.button
@@ -252,13 +234,28 @@ const Header = () => {
                 className:
                   "w-6 h-6 text-slate-600 group-hover:text-indigo-600 transition-colors duration-300",
               })}
-              {item.notification && (
-                <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+              {item.hasNotification && (
+                <>
+                  {/* Notification dot */}
+                  <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                  
+                  {/* Notification count badge */}
+                  {item.notificationCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5 ring-2 ring-white"
+                    >
+                      {item.notificationCount > 99 ? '99+' : item.notificationCount}
+                    </motion.span>
+                  )}
+                </>
               )}
             </motion.button>
           ))}
         </div>
       </header>
+      
       {showWelcome() && <WelcomeBanner />}
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.05)] border-t border-slate-200/70 lg:hidden z-40">
