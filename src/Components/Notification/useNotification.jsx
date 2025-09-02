@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 
 const useNotification = (open, onClose) => {
@@ -6,8 +7,13 @@ const useNotification = (open, onClose) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const socketRef = useRef(null);
+  const user = useSelector((state)=>state.auth.user);
   const initialLoadDone = useRef(false);
 
+  const userId = user?.studentId;
+  const branchId = user?.branchId;
+  console.log('userId', userId);
+  
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
     if (initialLoadDone.current) return; // Prevent multiple API calls
@@ -106,15 +112,15 @@ const useNotification = (open, onClose) => {
   }, [onClose]);
 
   useEffect(() => {
-    if (socketRef.current) return;
+    if (socketRef.current || !userId || !branchId) return;
 
     const newSocket = io("http://192.168.1.4:4000", {
       transportOptions: {
         polling: {
           extraHeaders: {
-            userId: "68b628c9e800ce03cd74ab48",
+            userId,
             userRole: "Student",
-            branchId: "68ad9dd04c5bfb46c7fb9dfb",
+            branchId,
           },
         },
       },
