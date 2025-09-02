@@ -1,79 +1,174 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 
-// const mockNotifications = [
-//   {
-//     id: 1,
-//     title: "Assignment Due Tomorrow",
-//     message: "Your Math assignment is due tomorrow at 11:59 PM",
-//     type: "warning",
-//     timestamp: "2 hours ago",
-//     read: false,
-//   },
-//   {
-//     id: 2,
-//     title: "New Grade Posted",
-//     message: "Your Science quiz grade has been posted - 95%",
-//     type: "success",
-//     timestamp: "5 hours ago",
-//     read: false,
-//   },
-//   {
-//     id: 3,
-//     title: "Class Cancelled",
-//     message: "Tomorrow's Physics class has been cancelled",
-//     type: "info",
-//     timestamp: "1 day ago",
-//     read: true,
-//   },
-//   {
-//     id: 4,
-//     title: "Fee Payment Reminder",
-//     message: "Your monthly fee payment is due in 3 days",
-//     type: "alert",
-//     timestamp: "2 days ago",
-//     read: false,
-//   },
-//   {
-//     id: 5,
-//     title: "Event Invitation",
-//     message: "You're invited to the Annual Science Fair next week",
-//     type: "info",
-//     timestamp: "3 days ago",
-//     read: true,
-//   },
-// ];
-
 const useNotification = (open, onClose) => {
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const socketRef = useRef(null);
+  const initialLoadDone = useRef(false);
 
-  // const unreadCount = notifications.filter((n) => !n.read).length;
+  // Fetch notifications from API
+  const fetchNotifications = useCallback(async () => {
+    if (initialLoadDone.current) return; // Prevent multiple API calls
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/notifications', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        
+        // Calculate unread count
+        const unread = data.notifications?.filter(n => !n.read).length || 0;
+        setUnreadCount(unread);
+        
+        initialLoadDone.current = true;
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  // const markAsRead = useCallback((id) => {
-  //   setNotifications((prev) =>
-  //     prev.map((notification) =>
-  //       notification.id === id ? { ...notification, read: true } : notification
-  //     )
-  //   );
-  // }, []);
-
-  const deleteNotification = useCallback((id) => {
-    setNotifications((prev) =>
-      prev.filter((notification) => notification.id !== id)
+  // Check for duplicate notifications
+  const isDuplicateNotification = useCallback((newNotification, existingNotifications) => {
+    return existingNotifications.some(existing => 
+      existing.id === newNotification.id ||
+      (existing.title === newNotification.title && 
+       existing.message === newNotification.message &&
+       Math.abs(new Date(existing.createdAt) - new Date(newNotification.createdAt)) < 1000) // Within 1 second
     );
   }, []);
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, read: true }))
+  // Add new notification from socket
+  const addSocketNotification = useCallback((newNotification) => {
+    setNotifications(prev => {
+      // Check for duplicates
+      if (isDuplicateNotification(newNotification, prev)) {
+        console.log('Duplicate notification ignored:', newNotification.title);
+        return prev;
+      }
+
+      // Add new notification at the beginning
+      const updated = [newNotification, ...prev];
+      
+      // Update unread count if notification is unread
+      if (!newNotification.read) {
+        setUnreadCount(prevCount => prevCount + 1);
+      }
+      
+      return updated;
+    });
+  }, [isDuplicateNotification]);
+
+  const markAsRead = useCallback((id) => {
+    setNotifications(prev =>
+      prev.map(notification => {
+        if (notification.id === id && !notification.read) {
+          // Decrease unread count
+          setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+          return { ...notification, read: true };
+        }
+        return notification;
+      })
     );
+  }, []);
+
+  const deleteNotification = useCallback((id) => {
+    setNotifications(prev => {
+      const notificationToDelete = prev.find(n => n.id === id);
+      if (notificationToDelete && !notificationToDelete.read) {
+        setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+      }
+      return prev.filter(notification => notification.id !== id);
+    });
+  }, []);
+
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev =>
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+    setUnreadCount(0);
   }, []);
 
   const clearAll = useCallback(() => {
     setNotifications([]);
+    setUnreadCount(0);
     onClose?.();
   }, [onClose]);
+
+  useEffect(() => {
+    if (socketRef.current) return;
+
+    const newSocket = io("http://192.168.1.4:4000", {
+      transportOptions: {
+        polling: {
+          extraHeaders: {
+            userId: "68b628c9e800ce03cd74ab48",
+            userRole: "Student",
+            branchId: "68ad9dd04c5bfb46c7fb9dfb",
+          },
+        },
+      },
+      transports: ["polling", "websocket"],
+      autoConnect: true,
+    });
+
+    socketRef.current = newSocket;
+
+    newSocket.on("connect", () => {
+      console.log("✅ Connected to Socket Server:", newSocket.id);
+    });
+
+    // Listen for new notifications
+    newSocket.on("new_notification", (notification) => {
+      console.log("📥 New notification received:", notification);
+      
+      // Format notification to match your structure
+      const formattedNotification = {
+        id: notification.id || Date.now(),
+        title: notification.title,
+        message: notification.message,
+        type: notification.type || 'info',
+        timestamp: notification.timestamp || 'Just now',
+        read: false,
+        createdAt: notification.createdAt || new Date().toISOString(),
+      };
+
+      addSocketNotification(formattedNotification);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("❌ Disconnected from Socket Server");
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array - run once on mount
+
+  // Fetch notifications when notification panel opens
+  useEffect(() => {
+    if (open && !initialLoadDone.current) {
+      fetchNotifications();
+    }
+  }, [open, fetchNotifications]);
 
   // Handle escape key to close notification
   useEffect(() => {
@@ -87,52 +182,15 @@ const useNotification = (open, onClose) => {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [open, onClose]);
 
-  // Socket Connection Build
-  useEffect(() => {
-    if (!open || socketRef.current) return;
-
-    const newSocket = io("http://192.168.1.4:4000", {
-      transportOptions: {
-        polling: {
-          extraHeaders: {
-            userId: "68ada3a64c5bfb46c7fb9eb9",
-            userRole: "Student",
-            branchId: "68ad9dd04c5bfb46c7fb9dfb",
-          },
-        },
-      },
-      transports: ["polling", "websocket"],
-    });
-
-    socketRef.current = newSocket;
-
-    newSocket.on("connect", () => {
-      console.log("✅ Connected to Socket Server:", newSocket.id);
-    });
-
-    // ✅ Listen for new notifications
-    newSocket.on("new_notification", (notification) => {
-      console.log("📥 New notification received:", notification);
-      setNotifications([notification]);
-    });
-
-    newSocket.on("disconnect", () => {
-      console.log("❌ Disconnected from Socket Server");
-    });
-
-    return () => {
-      newSocket.disconnect();
-      socketRef.current = null;
-    };
-  }, [open]);
-
   return {
     notifications,
-    // unreadCount,
-    // markAsRead,
+    unreadCount,
+    isLoading,
+    markAsRead,
     deleteNotification,
     markAllAsRead,
     clearAll,
+    refreshNotifications: fetchNotifications,
   };
 };
 

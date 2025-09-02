@@ -7,17 +7,20 @@ import {
   Info,
   Trash2,
   X,
+  RefreshCw,
 } from "lucide-react";
 import useNotification from "./useNotification";
 
 const Notification = ({ open, onClose }) => {
   const {
     notifications,
-    // unreadCount,
-    // markAsRead,
+    unreadCount,
+    isLoading,
+    markAsRead,
     deleteNotification,
-    // markAllAsRead,
-    // clearAll,
+    markAllAsRead,
+    clearAll,
+    refreshNotifications,
   } = useNotification(open, onClose);
 
   const NotificationIcon = ({ type }) => {
@@ -137,9 +140,14 @@ const Notification = ({ open, onClose }) => {
             {/* Header */}
             <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-purple-50">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-slate-800">
-                  Notifications
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-slate-800">
+                    Notifications
+                  </h3>
+                  {isLoading && (
+                    <RefreshCw className="w-4 h-4 text-slate-500 animate-spin" />
+                  )}
+                </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
@@ -150,7 +158,7 @@ const Notification = ({ open, onClose }) => {
                 </motion.button>
               </div>
 
-              {/* {notifications.length > 0 && (
+              {notifications.length > 0 && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-600">
                     {unreadCount > 0
@@ -158,6 +166,12 @@ const Notification = ({ open, onClose }) => {
                       : "All caught up!"}
                   </span>
                   <div className="flex gap-2">
+                    <button
+                      onClick={refreshNotifications}
+                      className="text-slate-600 hover:text-slate-700 font-medium"
+                    >
+                      Refresh
+                    </button>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllAsRead}
@@ -174,12 +188,16 @@ const Notification = ({ open, onClose }) => {
                     </button>
                   </div>
                 </div>
-              )} */}
+              )}
             </div>
 
             {/* Notifications List */}
             <div className="flex-1 overflow-y-auto">
-              {notifications?.length === 0 ? (
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <RefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
+                </div>
+              ) : notifications?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8">
                   <Bell className="w-16 h-16 text-slate-300 mb-4" />
                   <h4 className="text-lg font-medium text-slate-600 mb-2">
