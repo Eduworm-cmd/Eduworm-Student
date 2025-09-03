@@ -94,7 +94,7 @@ const useBranchWeekends = () => {
         console.log('Full API Response:', response);
 
         if (response.success && response.data) {
-          const branchData = response.data.data; // यहाँ change किया है
+          const branchData = response.data.data; 
           console.log('Branch weekends from API:', branchData.weekends);
 
           if (branchData.weekends && Array.isArray(branchData.weekends)) {

@@ -136,7 +136,7 @@ const LeaveStudent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-8xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-4">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-4 overflow-hidden">
             <FileText className="h-8 w-8 text-white" />

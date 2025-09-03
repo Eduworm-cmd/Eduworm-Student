@@ -114,7 +114,7 @@ const useNotification = (open, onClose) => {
   useEffect(() => {
     if (socketRef.current || !userId || !branchId) return;
 
-    const newSocket = io("http://192.168.1.4:4000", {
+    const newSocket = io("http://192.168.1.7:4000", {
       transportOptions: {
         polling: {
           extraHeaders: {
