@@ -6,7 +6,6 @@ import { allTimeTable, getStudentById } from "../../api/AllApis";
 import Loader from "../../Loader/Loader";
 
 export const TimeTable = () => {
-    const { enqueueSnackbar } = useSnackbar();
     const [timetableData, setTimetableData] = useState(null);
     const [studentData, setStudentData] = useState(null);
     const [selectedClass, setSelectedClass] = useState("");
@@ -18,6 +17,8 @@ export const TimeTable = () => {
     const [isTimetableLoading, setIsTimetableLoading] = useState(false);
 
     const user = useSelector((state) => state.auth?.user);
+
+    console.log('user', user);
 
     // Utility functions
     const generateWeekDays = useCallback(() => {

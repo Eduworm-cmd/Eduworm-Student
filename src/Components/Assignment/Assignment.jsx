@@ -714,14 +714,21 @@ const AssignmentBoard = () => {
     return Array.from(subjects);
   }, [assignments]);
 
+  // ✅ Always returns YYYY-MM-DD in IST
+  const formatToIndiaDate = (date) => {
+    return new Date(date).toLocaleDateString('en-CA', {
+      timeZone: 'Asia/Kolkata',
+    });
+  };
+
   // Filter assignments by selected day
   const getAssignmentsForDay = (dayDate) => {
     if (!dayDate) return assignments;
 
     return assignments.filter((assignment) => {
-      const assignmentDate = new Date(assignment.notificationTime)
-        .toISOString()
-        .split('T')[0];
+      const assignmentDate = new Date(
+        assignment.notificationTime,
+      ).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // ✅ IST
       return assignmentDate === dayDate;
     });
   };
@@ -781,6 +788,8 @@ const AssignmentBoard = () => {
     setFilteredAssignments(filtered);
   }, [selectedDay, assignments, applyFilters]);
 
+  console.log('selectday', selectedDay);
+
   const handleOpenModal = (assignment) => {
     const hasPlaylist =
       assignment.playlistIds && assignment.playlistIds.length > 0;
@@ -826,60 +835,57 @@ const AssignmentBoard = () => {
 
   const showCards = location.pathname === '/main/Assignment';
 
-const generateWeekDays = useCallback(() => {
-  console.log('Generating days with weekends:', weekends);
+ const generateWeekDays = useCallback(() => {
+   console.log('Generating days with weekends:', weekends);
 
-  // Get current date in local timezone
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day in local timezone
+   // Get current date in local timezone
+   const today = new Date();
+   today.setHours(0, 0, 0, 0);
 
-  const days = [];
+   const days = [];
+   const currentWeekMonday = new Date(today);
+   const dayOfWeek = today.getDay();
+   const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+   currentWeekMonday.setDate(today.getDate() + daysFromMonday);
+   currentWeekMonday.setHours(0, 0, 0, 0);
 
-  // Find Monday of the current week in local timezone
-  const currentWeekMonday = new Date(today);
-  const dayOfWeek = today.getDay();
-  const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  currentWeekMonday.setDate(today.getDate() + daysFromMonday);
-  currentWeekMonday.setHours(0, 0, 0, 0);
+   const dayNames = [
+     'sunday',
+     'monday',
+     'tuesday',
+     'wednesday',
+     'thursday',
+     'friday',
+     'saturday',
+   ];
 
-  const dayNames = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-  ];
+   for (let i = 0; i < 7; i++) {
+     const dayDate = new Date(currentWeekMonday);
+     dayDate.setDate(currentWeekMonday.getDate() + i);
 
-  // Generate 7 days
-  for (let i = 0; i < 7; i++) {
-    const dayDate = new Date(currentWeekMonday);
-    dayDate.setDate(currentWeekMonday.getDate() + i);
+     const dayIndex = dayDate.getDay();
+     const dayName = dayNames[dayIndex];
 
-    const dayIndex = dayDate.getDay();
-    const dayName = dayNames[dayIndex];
+     if (weekends.length === 0 || !weekends.includes(dayName)) {
+       days.push({
+         date: dayDate.getDate(),
+         day: dayDate.toLocaleDateString('en', { weekday: 'short' }),
+         dayFull: dayDate.toLocaleDateString('en', { weekday: 'long' }),
+         isToday: dayDate.toDateString() === today.toDateString(),
+         todayFullDate: formatToIndiaDate(today), 
 
-    // If weekends array is empty, show all days
-    // If weekends array has values, only show non-weekend days
-    if (weekends.length === 0 || !weekends.includes(dayName)) {
-      days.push({
-        date: dayDate.getDate(),
-        day: dayDate.toLocaleDateString('en', { weekday: 'short' }),
-        dayFull: dayDate.toLocaleDateString('en', { weekday: 'long' }),
-        isToday: dayDate.toDateString() === today.toDateString(),
-        todayFullDate: today.toISOString().split('T')[0],
-        fullDate: dayDate.toISOString().split('T')[0],
-      });
-    }
-  }
+         fullDate: dayDate.toLocaleDateString('en-CA', {
+           timeZone: 'Asia/Kolkata',
+         }),
+       });
+     }
+   }
 
-  
+   console.log('Today is:', today.toDateString());
+   console.log('Generated days:', days);
+   return days;
+ }, [weekends]);
 
-  console.log('Today is:', today.toDateString());
-  console.log('Generated days:', days);
-  return days;
-}, [weekends]);
 
   const [weekDays, setWeekDays] = useState([]);
 
@@ -894,6 +900,7 @@ const generateWeekDays = useCallback(() => {
   useEffect(() => {
     if (!selectedDay && weekDays.length > 0) {
       const today = weekDays.find((day) => day.isToday);
+      console.log('Today iskjdnfkj:', today);
       setSelectedDay(today ? today.fullDate : weekDays[0].fullDate);
     }
   }, [selectedDay, weekDays]);
