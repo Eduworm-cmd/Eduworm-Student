@@ -40,8 +40,6 @@ const useAssignments = () => {
   const studentId = useSelector((state) => state.auth.user.studentId);
   const branchId = useSelector((state) => state.auth.user.branchId);
 
-  console.log('brnahchId', branchId);
-
   useEffect(() => {
     const fetchAssignments = async () => {
       if (!studentId) {
@@ -75,8 +73,6 @@ const useBranchWeekends = () => {
   const [loading, setLoading] = useState(true);
   const branchId = useSelector((state) => state.auth.user.branchId);
 
-  console.log('brnahchIdfjdnkj', branchId);
-
   useEffect(() => {
     const fetchBranchWeekends = async () => {
       if (!branchId) {
@@ -91,17 +87,14 @@ const useBranchWeekends = () => {
           `auth_SchoolBranch/branches/${branchId}`,
         );
 
-        console.log('Full API Response:', response);
-
+      
         if (response.success && response.data) {
           const branchData = response.data.data; 
-          console.log('Branch weekends from API:', branchData.weekends);
 
           if (branchData.weekends && Array.isArray(branchData.weekends)) {
             const mappedWeekends = branchData.weekends.map((day) =>
               day.toLowerCase(),
             );
-            console.log('Setting weekends to:', mappedWeekends);
             setWeekends(mappedWeekends);
           } else {
             console.log('No weekends found, using empty array');
@@ -121,8 +114,6 @@ const useBranchWeekends = () => {
 
     fetchBranchWeekends();
   }, [branchId]);
-
-  console.log('Current weekends state:', weekends);
   return { weekends, loading };
 };
 
@@ -159,6 +150,7 @@ const WeekDayCard = ({ day, isSelected, onClick }) => (
       >
         {day.isToday ? 'TODAY' : day.day.toUpperCase()}
       </div>
+      
 
       <div
         className={`font-bold mb-1 text-xl sm:text-2xl md:text-3xl ${
@@ -788,7 +780,6 @@ const AssignmentBoard = () => {
     setFilteredAssignments(filtered);
   }, [selectedDay, assignments, applyFilters]);
 
-  console.log('selectday', selectedDay);
 
   const handleOpenModal = (assignment) => {
     const hasPlaylist =
@@ -836,7 +827,6 @@ const AssignmentBoard = () => {
   const showCards = location.pathname === '/main/Assignment';
 
  const generateWeekDays = useCallback(() => {
-   console.log('Generating days with weekends:', weekends);
 
    // Get current date in local timezone
    const today = new Date();
@@ -881,8 +871,6 @@ const AssignmentBoard = () => {
      }
    }
 
-   console.log('Today is:', today.toDateString());
-   console.log('Generated days:', days);
    return days;
  }, [weekends]);
 
@@ -900,7 +888,6 @@ const AssignmentBoard = () => {
   useEffect(() => {
     if (!selectedDay && weekDays.length > 0) {
       const today = weekDays.find((day) => day.isToday);
-      console.log('Today iskjdnfkj:', today);
       setSelectedDay(today ? today.fullDate : weekDays[0].fullDate);
     }
   }, [selectedDay, weekDays]);

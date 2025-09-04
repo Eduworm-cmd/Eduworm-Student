@@ -318,7 +318,7 @@ const QuizInterface = () => {
         }
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setLoading(false);      
         }
       }
     };

@@ -316,11 +316,6 @@ export const TimeTable = () => {
     }
   }, [selectedDay, weekDays]);
 
-  const handleEdit = (lessonId) => {
-    // Handle edit functionality
-    console.log('Edit lesson:', lessonId);
-  };
-
   const LessonCard = ({ lesson, index }) => (
     <div
       className={`relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer group transform hover:-translate-y-2 hover:scale-105`}

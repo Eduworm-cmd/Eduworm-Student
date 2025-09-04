@@ -76,8 +76,6 @@ export const ScheduleCard = ({ schedule }) => {
         const responses = await Promise.all(contentPromises);
         const contentData = responses.map((response) => response.data);
         setContentData(contentData);
-
-        console.log('Content Data:', contentData);
       } catch (error) {
         console.log('Error fetching content:', error);
         setContentData([]);

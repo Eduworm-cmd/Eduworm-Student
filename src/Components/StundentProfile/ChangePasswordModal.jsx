@@ -51,7 +51,7 @@ function ChangePasswordModal({ isOpen, onClose, studentId, parentEmail }) {
         newPassword,
       });
 
-      console.log(response);
+    
 
       if (response.success) {
         setSuccess('Password changed successfully!');
