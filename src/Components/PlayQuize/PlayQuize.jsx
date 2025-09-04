@@ -32,7 +32,6 @@ const PlayQuize = () => {
 
       if (response.data?.success) {
         setQuizData(response.data.data);
-        console.log('Quiz Data:', response.data.data);
       } else {
         console.error('Quiz fetch failed:', response.data.message);
       }
