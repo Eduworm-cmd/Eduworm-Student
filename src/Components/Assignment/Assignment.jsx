@@ -874,14 +874,12 @@ const generateWeekDays = useCallback(() => {
 
   const [weekDays, setWeekDays] = useState([]);
 
-  // Update weekDays when weekends data is loaded
   useEffect(() => {
     if (!weekendsLoading) {
       setWeekDays(generateWeekDays());
     }
   }, [weekendsLoading, weekends, generateWeekDays]);
 
-  // Set today as default selected day
   useEffect(() => {
     if (!selectedDay && weekDays.length > 0) {
       const today = weekDays.find((day) => day.isToday);
