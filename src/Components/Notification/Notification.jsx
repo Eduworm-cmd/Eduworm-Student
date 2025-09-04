@@ -71,7 +71,7 @@ const Notification = ({ open, onClose }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-xs text-slate-500">
               <Clock className="w-3 h-3" />
-              {notification.timestamp}
+              {formatDate(notification?.createdAt)}
             </div>
             <div className="flex items-center gap-1">
               {!notification.read && (
@@ -113,6 +113,20 @@ const Notification = ({ open, onClose }) => {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
     exit: { opacity: 0 },
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
+
+    if (diffInHours < 1) {
+      return `${Math.floor((now - date) / (1000 * 60))}m ago`;
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)}h ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
   };
 
   return (

@@ -40,8 +40,6 @@ const useAssignments = () => {
   const studentId = useSelector((state) => state.auth.user.studentId);
   const branchId = useSelector((state) => state.auth.user.branchId);
 
-  console.log('brnahchId', branchId);
-
   useEffect(() => {
     const fetchAssignments = async () => {
       if (!studentId) {
@@ -75,8 +73,6 @@ const useBranchWeekends = () => {
   const [loading, setLoading] = useState(true);
   const branchId = useSelector((state) => state.auth.user.branchId);
 
-  console.log('brnahchIdfjdnkj', branchId);
-
   useEffect(() => {
     const fetchBranchWeekends = async () => {
       if (!branchId) {
@@ -91,17 +87,13 @@ const useBranchWeekends = () => {
           `auth_SchoolBranch/branches/${branchId}`,
         );
 
-        console.log('Full API Response:', response);
-
         if (response.success && response.data) {
-          const branchData = response.data.data; // यहाँ change किया है
-          console.log('Branch weekends from API:', branchData.weekends);
+          const branchData = response.data.data; 
 
           if (branchData.weekends && Array.isArray(branchData.weekends)) {
             const mappedWeekends = branchData.weekends.map((day) =>
               day.toLowerCase(),
             );
-            console.log('Setting weekends to:', mappedWeekends);
             setWeekends(mappedWeekends);
           } else {
             console.log('No weekends found, using empty array');
@@ -122,7 +114,6 @@ const useBranchWeekends = () => {
     fetchBranchWeekends();
   }, [branchId]);
 
-  console.log('Current weekends state:', weekends);
   return { weekends, loading };
 };
 
@@ -827,8 +818,6 @@ const AssignmentBoard = () => {
   const showCards = location.pathname === '/main/Assignment';
 
 const generateWeekDays = useCallback(() => {
-  console.log('Generating days with weekends:', weekends);
-
   // Get current date in local timezone
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Set to start of day in local timezone
@@ -874,10 +863,6 @@ const generateWeekDays = useCallback(() => {
     }
   }
 
-  
-
-  console.log('Today is:', today.toDateString());
-  console.log('Generated days:', days);
   return days;
 }, [weekends]);
 

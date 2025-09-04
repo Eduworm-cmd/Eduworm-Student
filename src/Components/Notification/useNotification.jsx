@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
+import { apiService } from "../../api/apiService";
 
 const useNotification = (open, onClose) => {
+  const BASE_URL = import.meta.env.VITE_SOCKET_URL;
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -12,27 +14,21 @@ const useNotification = (open, onClose) => {
 
   const userId = user?.studentId;
   const branchId = user?.branchId;
-  console.log('userId', userId);
   
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
-    if (initialLoadDone.current) return; // Prevent multiple API calls
+    if (initialLoadDone.current || !branchId) return;
     
     setIsLoading(true);
     try {
-      const response = await fetch('/api/notifications', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiService.get(`notifications/branch/${branchId}?role=Student`)
       
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.notifications || []);
+      if (response.success) {
+        const data = await response?.data.data;
+        setNotifications(data || []);
         
         // Calculate unread count
-        const unread = data.notifications?.filter(n => !n.read).length || 0;
+        const unread = data?.filter(n => !n.read).length || 0;
         setUnreadCount(unread);
         
         initialLoadDone.current = true;
@@ -50,7 +46,7 @@ const useNotification = (open, onClose) => {
       existing.id === newNotification.id ||
       (existing.title === newNotification.title && 
        existing.message === newNotification.message &&
-       Math.abs(new Date(existing.createdAt) - new Date(newNotification.createdAt)) < 1000) // Within 1 second
+       Math.abs(new Date(existing.createdAt) - new Date(newNotification.createdAt)) < 1000) 
     );
   }, []);
 
@@ -59,7 +55,6 @@ const useNotification = (open, onClose) => {
     setNotifications(prev => {
       // Check for duplicates
       if (isDuplicateNotification(newNotification, prev)) {
-        console.log('Duplicate notification ignored:', newNotification.title);
         return prev;
       }
 
@@ -111,10 +106,10 @@ const useNotification = (open, onClose) => {
     onClose?.();
   }, [onClose]);
 
-  useEffect(() => {
-    if (socketRef.current || !userId || !branchId) return;
 
-    const newSocket = io("http://192.168.1.4:4000", {
+  useEffect(() => {
+    if (socketRef.current || !userId || !branchId) return;    
+    const newSocket = io(BASE_URL, {
       transportOptions: {
         polling: {
           extraHeaders: {
@@ -160,23 +155,20 @@ const useNotification = (open, onClose) => {
       console.error("Socket connection error:", error);
     });
 
-    // Cleanup on unmount
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, []); // Empty dependency array - run once on mount
+  }, []);
 
-  // Fetch notifications when notification panel opens
   useEffect(() => {
     if (open && !initialLoadDone.current) {
       fetchNotifications();
     }
   }, [open, fetchNotifications]);
 
-  // Handle escape key to close notification
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape" && open) {

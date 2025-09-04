@@ -36,9 +36,6 @@ export const requestPermission = async (userId) => {
       const token = await getToken(messaging, {
         vapidKey: 'BGtNoSSNnQ7waJbIqM2Qa_otSzocOh2gx6xhtU416zstQRhwRiUIZIDSV70lsolRc8YjvLmJAMnA6lWEI8YS_d0'
       });
-
-      console.log('✅ FCM Token:', token);
-
       await apiService.post('fcm/save-fcm-token', { userId, fcmToken: token });
     } else {
       console.warn('🚫 Notification permission denied:', permission);
@@ -51,8 +48,6 @@ export const requestPermission = async (userId) => {
 // ✅ Show notification manually if site is open
 if (messagingSupport && messaging) {
   onMessage(messaging, (payload) => {
-    console.log('📩 Foreground message:', payload);
-
     if (document.visibilityState === 'visible' && Notification.permission === 'granted') {
       const { title, body } = payload.notification;
       new Notification(title, {
