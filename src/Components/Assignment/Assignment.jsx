@@ -1078,7 +1078,7 @@ const generateWeekDays = useCallback(() => {
 
         {/* Week Day Selector - Only show if weekDays are loaded */}
         {weekDays.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-5">
             <div
               className={`grid gap-2 sm:gap-4`}
               style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
