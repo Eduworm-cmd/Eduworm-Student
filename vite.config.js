@@ -17,4 +17,7 @@ export default defineConfig({
       '@pages': path.resolve(__dirname, './src/pages'),
     },
   },
+  build: {
+    target: 'es2022' // ✅ This allows top-level await
+  }
 });
