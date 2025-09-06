@@ -49,7 +49,6 @@ function App() {
             <Route path="events" element={<Events />} />
             <Route path="chat" element={<StudentChatSystem />} />
             <Route path="content-view" element={<ContentModal />} />
-
           </Route>
 
           {/* Protected Route for Admin Panel */}
