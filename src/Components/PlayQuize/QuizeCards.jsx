@@ -107,44 +107,66 @@ const FilterBar = memo(({ onFilterChange, onSortChange, onLayoutChange, layout, 
     <div className="bg-white/80 backdrop-blur-lg border border-gray-200/80 rounded-2xl p-4 mb-8 shadow-sm">
       <div className="flex flex-col sm:flex-row gap-4 items-center">
         <div className="relative flex-grow w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search quizzes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            className="w-130 pl-11 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
           />
         </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg font-semibold hover:bg-gray-200 transition"
-        >
-          <Filter size={16} /> Filters
-        </button>
+        <div>
+          <select
+            value={filters.subject}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, subject: e.target.value }))
+            }
+            className="w-50 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {subjects.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex items-center bg-gray-100 rounded-lg p-1">
-          <button onClick={() => onLayoutChange('grid')} className={`p-2 rounded-md ${layout === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}>
+          <button
+            onClick={() => onLayoutChange('grid')}
+            className={`p-2 rounded-md ${
+              layout === 'grid'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-500 hover:text-blue-600'
+            }`}
+          >
             <Grid3X3 size={20} />
           </button>
-          <button onClick={() => onLayoutChange('list')} className={`p-2 rounded-md ${layout === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'}`}>
+          <button
+            onClick={() => onLayoutChange('list')}
+            className={`p-2 rounded-md ${
+              layout === 'list'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-500 hover:text-blue-600'
+            }`}
+          >
             <List size={20} />
           </button>
         </div>
       </div>
-      <div className={`transition-all duration-300 overflow-hidden ${showFilters ? 'max-h-96 mt-4 pt-4 border-t border-gray-200' : 'max-h-0'}`}>
+      <div
+        className={`transition-all duration-300 overflow-hidden ${
+          showFilters
+            ? 'max-h-96 mt-4 pt-4 border-t border-gray-200'
+            : 'max-h-0'
+        }`}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-semibold text-gray-700 block mb-2">Subject</label>
-            <select
-              value={filters.subject}
-              onChange={(e) => setFilters(prev => ({ ...prev, subject: e.target.value }))}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-semibold text-gray-700 block mb-2">Sort By</label>
+            {/* <label className="text-sm font-semibold text-gray-700 block mb-2">Sort By</label>
             <div className="flex gap-2">
               {sortOptions.map(opt => (
                 <button
@@ -156,7 +178,7 @@ const FilterBar = memo(({ onFilterChange, onSortChange, onLayoutChange, layout, 
                   <opt.icon size={14} /> {opt.name}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
