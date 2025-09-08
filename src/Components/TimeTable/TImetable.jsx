@@ -376,9 +376,6 @@ export const TimeTable = () => {
               <h3 className={`font-bold text-xl ${colorStyle.textColor}`}>
                 {lesson.subject}
               </h3>
-              <span className="text-sm font-medium text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded-full">
-                {lesson.type}
-              </span>
             </div>
           </div>
           <div className="text-right">
