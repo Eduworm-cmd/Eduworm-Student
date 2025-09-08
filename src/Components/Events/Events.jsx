@@ -1,4 +1,4 @@
-import { Calendar, EyeIcon, FileText, Users, X, Search, Filter, CalendarDays, Sparkles, CheckCircle, AlertCircle, Bell } from 'lucide-react';
+import { Calendar, EyeIcon, FileText, Users, X, Search, Filter, CalendarDays, Sparkles, CheckCircle, AlertCircle, Bell, BadgeAlert, BadgeCheck } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { getEvents } from '../../api/AllApis';
@@ -98,10 +98,10 @@ export const Events = () => {
     const completed = filteredEvents.filter(e => parseInt(e.leftDay) < 0).length;
 
     return [
-      { label: 'Total', value: total, color: 'from-blue-500 to-cyan-500' },
-      { label: 'Today', value: today, color: 'from-green-500 to-emerald-500' },
-      { label: 'This Week', value: week, color: 'from-purple-500 to-pink-500' },
-      { label: 'Completed', value: completed, color: 'from-slate-500 to-slate-700' },
+      { label: 'Total', value: total, color: 'from-blue-500 to-cyan-500' ,icon:<CalendarDays />},
+      { label: 'Today', value: today, color: 'from-green-500 to-emerald-500',icon:<Sparkles/>},
+      { label: 'This Week', value: week, color: 'from-purple-500 to-pink-500',icon:<BadgeAlert /> },
+      { label: 'Completed', value: completed, color: 'from-slate-500 to-slate-700',icon:<BadgeCheck /> },
     ];
   }, [filteredEvents]);
 
@@ -211,7 +211,8 @@ export const Events = () => {
           {stats.map((s, idx) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-5 shadow-sm">
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center shadow-md mb-2`}>
-                <Sparkles className="w-6 h-6 text-white" />
+                {/* < className="w-6 h-6 text-white" /> */}
+                {s.icon}
               </div>
               <div className="text-2xl font-bold text-slate-800">{s.value}</div>
               <div className="text-sm text-slate-600">{s.label}</div>
@@ -302,20 +303,14 @@ export const Events = () => {
                           <p className="text-gray-600">{formatDate(selectedEvent.eventDate)}</p>
                         </div>
                       </div>
-                      <div className="flex items-center">
+                     
+                    </div>
+                    <div className="space-y-4">
+                       <div className="flex items-center">
                         <div className={`w-3 h-3 rounded-full mr-3 ${getDaysLeftColor(selectedEvent.leftDay).split(' ')[0]}`}></div>
                         <div>
                           <p className="font-semibold text-gray-900">Status</p>
                           <p className="text-gray-600">{getDaysLeftText(selectedEvent.leftDay)}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex items-center">
-                        <Users className="w-5 h-5 text-purple-500 mr-3" />
-                        <div>
-                          <p className="font-semibold text-gray-900">Branch</p>
-                          <p className="text-gray-600">{selectedEvent.branch.name}</p>
                         </div>
                       </div>
                     </div>

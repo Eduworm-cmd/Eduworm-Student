@@ -17,7 +17,7 @@ import { getStudentById } from '../../api/AllApis';
 import Loader from '../../Loader/Loader';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../../redux/slice/userData';
-import { MessageCircleQuestionMark, NotebookPen, TentTree } from 'lucide-react';
+import { MessageCircleQuestionMark, NotebookPen } from 'lucide-react';
 
 const AdminPanelLayout = () => {
 
