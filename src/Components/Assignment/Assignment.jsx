@@ -67,7 +67,6 @@ const useAssignments = () => {
   return { assignments, loading };
 };
 
-
 const useBranchWeekends = () => {
   const [weekends, setWeekends] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +87,7 @@ const useBranchWeekends = () => {
         );
 
         if (response.success && response.data) {
-          const branchData = response.data.data; 
+          const branchData = response.data.data;
 
           if (branchData.weekends && Array.isArray(branchData.weekends)) {
             const mappedWeekends = branchData.weekends.map((day) =>
@@ -115,8 +114,6 @@ const useBranchWeekends = () => {
   }, [branchId]);
   return { weekends, loading };
 };
-
-
 
 const WeekDayCard = ({ day, isSelected, onClick }) => (
   <div
@@ -149,7 +146,6 @@ const WeekDayCard = ({ day, isSelected, onClick }) => (
       >
         {day.isToday ? 'TODAY' : day.day.toUpperCase()}
       </div>
-      
 
       <div
         className={`font-bold mb-1 text-xl sm:text-2xl md:text-3xl ${
@@ -779,7 +775,6 @@ const AssignmentBoard = () => {
     setFilteredAssignments(filtered);
   }, [selectedDay, assignments, applyFilters]);
 
-
   const handleOpenModal = (assignment) => {
     const hasPlaylist =
       assignment.playlistIds && assignment.playlistIds.length > 0;
@@ -825,52 +820,52 @@ const AssignmentBoard = () => {
 
   const showCards = location.pathname === '/main/Assignment';
 
-const generateWeekDays = useCallback(() => {
-  // Get current date in local timezone
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day in local timezone
+  const generateWeekDays = useCallback(() => {
+    // Get current date in local timezone
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day in local timezone
 
-   const days = [];
-   const currentWeekMonday = new Date(today);
-   const dayOfWeek = today.getDay();
-   const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-   currentWeekMonday.setDate(today.getDate() + daysFromMonday);
-   currentWeekMonday.setHours(0, 0, 0, 0);
+    const days = [];
+    const currentWeekMonday = new Date(today);
+    const dayOfWeek = today.getDay();
+    const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    currentWeekMonday.setDate(today.getDate() + daysFromMonday);
+    currentWeekMonday.setHours(0, 0, 0, 0);
 
-   const dayNames = [
-     'sunday',
-     'monday',
-     'tuesday',
-     'wednesday',
-     'thursday',
-     'friday',
-     'saturday',
-   ];
+    const dayNames = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ];
 
-   for (let i = 0; i < 7; i++) {
-     const dayDate = new Date(currentWeekMonday);
-     dayDate.setDate(currentWeekMonday.getDate() + i);
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(currentWeekMonday);
+      dayDate.setDate(currentWeekMonday.getDate() + i);
 
-     const dayIndex = dayDate.getDay();
-     const dayName = dayNames[dayIndex];
+      const dayIndex = dayDate.getDay();
+      const dayName = dayNames[dayIndex];
 
-     if (weekends.length === 0 || !weekends.includes(dayName)) {
-       days.push({
-         date: dayDate.getDate(),
-         day: dayDate.toLocaleDateString('en', { weekday: 'short' }),
-         dayFull: dayDate.toLocaleDateString('en', { weekday: 'long' }),
-         isToday: dayDate.toDateString() === today.toDateString(),
-         todayFullDate: formatToIndiaDate(today), 
+      if (weekends.length === 0 || !weekends.includes(dayName)) {
+        days.push({
+          date: dayDate.getDate(),
+          day: dayDate.toLocaleDateString('en', { weekday: 'short' }),
+          dayFull: dayDate.toLocaleDateString('en', { weekday: 'long' }),
+          isToday: dayDate.toDateString() === today.toDateString(),
+          todayFullDate: formatToIndiaDate(today),
 
-         fullDate: dayDate.toLocaleDateString('en-CA', {
-           timeZone: 'Asia/Kolkata',
-         }),
-       });
-     }
-   }
+          fullDate: dayDate.toLocaleDateString('en-CA', {
+            timeZone: 'Asia/Kolkata',
+          }),
+        });
+      }
+    }
 
-  return days;
-}, [weekends]);
+    return days;
+  }, [weekends]);
 
   const [weekDays, setWeekDays] = useState([]);
 

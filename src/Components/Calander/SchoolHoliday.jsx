@@ -1,122 +1,74 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  MapPin,
-  Clock,
-  Info,
-  Gift,
-  Sparkles,
-  Star,
-  PartyPopper,
-  Flag,
-  Church,
-  GraduationCap,
-  ChevronsLeft,
-  ChevronsRight,
-} from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { apiService } from '../../api/apiService';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  useFloating,
-  autoUpdate,
-  offset,
-  flip,
-  shift,
-  useHover,
-  useInteractions,
-} from '@floating-ui/react';
+import React, { useState, useEffect } from "react";
+import {ChevronLeft,ChevronRight,Calendar,MapPin,Clock,Info,Gift,Sparkles,Star,PartyPopper,Flag,ChevronsLeft,ChevronsRight,CloudSun,} from "lucide-react";
+import { useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
+import {useFloating,autoUpdate,offset,flip,shift,useHover,useInteractions,} from "@floating-ui/react";
+import { useCalendarData } from "./hooks/useClanderData";
 
 const SchoolHoliday = () => {
   const branchId = useSelector((state) => state.auth.user.branchId);
   const currentSchoolId = useSelector((state) => state.auth.user.schoolId);
+  const {
+    calendarData,
+    currentDate,
+    initialLoading,
+    monthLoading,
+    error,
+    navigateMonth,
+    retry,
+    getDaysUntilHoliday,
+    formatDate,
+    getHolidays,
+    getStats,
+  } = useCalendarData(branchId);
 
-  const [calendarData, setCalendarData] = useState(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [activeTooltipDate, setActiveTooltipDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      const isTooltip = e.target.closest('.holiday-tooltip');
-      const isDayCell = e.target.closest('.holiday-day-cell');
+      const isTooltip = e.target.closest(".holiday-tooltip");
+      const isDayCell = e.target.closest(".holiday-day-cell");
 
       if (!isTooltip && !isDayCell) {
         setActiveTooltipDate(null);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    fetchCalendarData();
-  }, [currentDate]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [currentDate]);
 
-  const fetchCalendarData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-
-      const response = await apiService.get(
-        `attendance/calendar/${branchId}/${year}/${month}`,
-      );
-
-      setCalendarData(response.data);
-    } catch (err) {
-      setError('Failed to load calendar data');
-      console.error('Calendar API Error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const navigateMonth = (direction) => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + direction);
-    setCurrentDate(newDate);
-  };
-
   const getHolidayTypeColor = (type) => {
     switch (type?.toLowerCase()) {
-      case 'national':
-        return 'from-red-500 to-red-600';
-      case 'religious':
-        return 'from-orange-500 to-orange-600';
-      case 'regional':
-        return 'from-blue-500 to-blue-600';
-      case 'school':
-        return 'from-purple-500 to-purple-600';
+      case "national":
+        return "from-red-500 to-red-600";
+      case "religious":
+        return "from-orange-500 to-orange-600";
+      case "regional":
+        return "from-blue-500 to-blue-600";
+      case "school":
+        return "from-purple-500 to-purple-600";
       default:
-        return 'from-orange-400 to-orange-500';
+        return "from-orange-400 to-orange-500";
     }
   };
 
   const getHolidayTypeIcon = (type) => {
     switch (type?.toLowerCase()) {
-      case 'national':
+      case "holiday":
         return <Flag className="w-4 h-4" />;
-      case 'religious':
-        return <Church className="w-4 h-4" />;
-      case 'regional':
+      case "vacation":
+        return <CloudSun className="w-4 h-4" />;
+      case "event":
         return <MapPin className="w-4 h-4" />;
-      case 'school':
-        return <GraduationCap className="w-4 h-4" />;
       default:
         return <PartyPopper className="w-4 h-4" />;
     }
@@ -124,43 +76,22 @@ const SchoolHoliday = () => {
 
   const getHolidayTypeBg = (type) => {
     switch (type?.toLowerCase()) {
-      case 'national':
-        return 'bg-red-50 border-red-200';
-      case 'religious':
-        return 'bg-orange-50 border-orange-200';
-      case 'regional':
-        return 'bg-blue-50 border-blue-200';
-      case 'school':
-        return 'bg-purple-50 border-purple-200';
+      case "holiday":
+        return "bg-red-50 border-red-200";
+      case "vacation":
+        return "bg-orange-50 border-orange-200";
+      case "event":
+        return "bg-blue-50 border-blue-200";
       default:
-        return 'bg-orange-50 border-orange-200';
+        return "bg-orange-50 border-orange-200";
     }
-  };
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const getDaysUntilHoliday = (dateStr) => {
-    const holidayDate = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diffTime = holidayDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
   };
 
   const HolidayTooltip = ({ dateStr, dayData, daysUntil }) => {
     const { x, y, strategy, refs, context } = useFloating({
       open: activeTooltipDate === dateStr,
       onOpenChange: (open) => setActiveTooltipDate(open ? dateStr : null),
-      placement: 'top',
+      placement: "top",
       middleware: [offset(10), flip({ padding: 10 }), shift({ padding: 10 })],
       whileElementsMounted: autoUpdate,
     });
@@ -190,7 +121,6 @@ const SchoolHoliday = () => {
               }}
               {...getFloatingProps()}
             >
-              {/* Close Button */}
               <button
                 onClick={() => setActiveTooltipDate(null)}
                 className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -200,22 +130,21 @@ const SchoolHoliday = () => {
 
               <div className="flex items-center mb-3">
                 <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-r ${getHolidayTypeColor(
-                    dayData?.holidayInfo?.type,
-                  )} flex items-center justify-center text-white mr-3`}
+                  className='w-10 h-10 rounded-full bg-gradient-to-r 
+                  flex items-center justify-center text-white mr-3 bg-gray-400'
                 >
                   {getHolidayTypeIcon(dayData?.holidayInfo?.type)}
                 </div>
                 <div>
                   <span className="font-bold text-gray-900 text-sm">
-                    {dayData?.holidayInfo?.name || 'Holiday'}
+                    {dayData?.holidayInfo?.name || "Holiday"}
                   </span>
                   <div className="text-xs text-gray-500">
                     {daysUntil > 0
                       ? `${daysUntil} days away`
                       : daysUntil === 0
-                      ? 'Today!'
-                      : 'Past'}
+                      ? "Today!"
+                      : "Past"}
                   </div>
                 </div>
               </div>
@@ -243,9 +172,8 @@ const SchoolHoliday = () => {
       today.getMonth() + 1 === monthInfo.month;
 
     const days = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-20 md:h-24"></div>);
     }
@@ -253,7 +181,7 @@ const SchoolHoliday = () => {
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${monthInfo.year}-${monthInfo.month
         .toString()
-        .padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
       const dayData = calendar.find((d) => d.date === dateStr);
       const isToday = isCurrentMonth && today.getDate() === day;
       const isHoliday = dayData?.isHoliday;
@@ -267,22 +195,22 @@ const SchoolHoliday = () => {
           transition={{ delay: day * 0.01 }}
           className={`relative group holiday-day-cell h-10 md:h-24 w-full p-2 border border-gray-200 rounded-xl transition-all duration-300 hover:shadow-lg cursor-pointer ${
             isToday
-              ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 ring-2 ring-blue-300'
-              : 'bg-white hover:bg-gray-50'
+              ? "bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 ring-2 ring-blue-300"
+              : "bg-white hover:bg-gray-50"
           } ${
             isHoliday
-              ? 'bg-gradient-to-br from-orange-100 to-orange-200 border-orange-400 shadow-md hover:shadow-xl'
-              : ''
+              ? "bg-gradient-to-br from-orange-100 to-orange-200 border-orange-400 shadow-md hover:shadow-xl"
+              : ""
           }`}
         >
           <div className="flex flex-col h-full items-center justify-center text-center">
             <span
               className={`text-sm md:text-lg font-semibold ${
                 isToday
-                  ? 'text-blue-700'
+                  ? "text-blue-700"
                   : isHoliday
-                  ? 'text-orange-800'
-                  : 'text-gray-700'
+                  ? "text-orange-800"
+                  : "text-gray-700"
               }`}
             >
               {day}
@@ -303,7 +231,7 @@ const SchoolHoliday = () => {
               daysUntil={daysUntil}
             />
           )}
-        </motion.div>,
+        </motion.div>
       );
     }
 
@@ -325,16 +253,7 @@ const SchoolHoliday = () => {
   };
 
   const renderHolidaysList = () => {
-    if (!calendarData) return null;
-
-    const holidays = (calendarData?.calendar || [])
-      .filter(
-        (day) =>
-          day.isHoliday &&
-          (!day.holidayInfo?.schoolId ||
-            day.holidayInfo?.schoolId === currentSchoolId),
-      )
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    const holidays = getHolidays(currentSchoolId);
 
     if (holidays.length === 0) {
       return (
@@ -379,7 +298,7 @@ const SchoolHoliday = () => {
                 <div className="flex items-start gap-3">
                   <div
                     className={`flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-r ${getHolidayTypeColor(
-                      holiday.holidayInfo?.type,
+                      holiday.holidayInfo?.type
                     )} flex items-center justify-center text-white`}
                   >
                     {getHolidayTypeIcon(holiday.holidayInfo?.type)}
@@ -387,14 +306,14 @@ const SchoolHoliday = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="text-sm font-semibold text-gray-900 truncate">
-                        {holiday.holidayInfo?.name || 'Holiday'}
+                        {holiday.holidayInfo?.name || "Holiday"}
                       </h4>
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getHolidayTypeBg(
-                          holiday.holidayInfo?.type,
+                          holiday.holidayInfo?.type
                         )}`}
                       >
-                        {holiday.holidayInfo?.type || 'General'}
+                        {holiday.holidayInfo?.type || "General"}
                       </span>
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-xs text-gray-600">
@@ -479,14 +398,14 @@ const SchoolHoliday = () => {
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                           currentPage === page
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
-                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                            : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
                         }`}
                       >
                         {page}
                       </button>
                     );
-                  },
+                  }
                 )}
               </div>
 
@@ -520,29 +439,26 @@ const SchoolHoliday = () => {
 
   const stats = [
     {
-      label: 'Total Holidays',
-      value: calendarData?.monthInfo?.holidays || 0,
+      label: "Total Holidays",
+      value: getStats(currentSchoolId).totalHolidays,
       icon: Gift,
-      color: 'from-purple-500 to-pink-500',
+      color: "from-purple-500 to-pink-500",
     },
     {
-      label: 'Days This Month',
-      value: calendarData?.monthInfo?.totalDays || 0,
+      label: "Days This Month",
+      value: getStats(currentSchoolId).totalDays,
       icon: Calendar,
-      color: 'from-blue-500 to-cyan-500',
+      color: "from-blue-500 to-cyan-500",
     },
     {
-      label: 'Upcoming Holidays',
-      value:
-        calendarData?.calendar?.filter(
-          (d) => d.isHoliday && getDaysUntilHoliday(d.date) > 0,
-        ).length || 0,
+      label: "Upcoming Holidays",
+      value: getStats(currentSchoolId).upcomingHolidays,
       icon: Star,
-      color: 'from-orange-500 to-red-500',
+      color: "from-orange-500 to-red-500",
     },
   ];
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white flex items-center justify-center">
         <motion.div
@@ -574,7 +490,7 @@ const SchoolHoliday = () => {
           </div>
           <p className="text-red-600 font-medium text-lg mb-4">{error}</p>
           <button
-            onClick={fetchCalendarData}
+            onClick={retry}
             className="bg-red-500 text-white px-6 py-3 rounded-xl hover:bg-red-600 transition-colors font-medium"
           >
             Try Again
@@ -587,7 +503,6 @@ const SchoolHoliday = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white">
       <div className="max-w-8xl mx-auto p-4 md:p-6">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -650,40 +565,63 @@ const SchoolHoliday = () => {
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => navigateMonth(-1)}
-                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white"
+                  disabled={monthLoading}
+                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
 
                 <div className="text-center text-white">
                   <h2 className="text-2xl md:text-3xl font-bold">
-                    {new Intl.DateTimeFormat('en-US', {
-                      month: 'long',
-                      year: 'numeric',
+                    {new Intl.DateTimeFormat("en-US", {
+                      month: "long",
+                      year: "numeric",
                     }).format(currentDate)}
                   </h2>
                   <div className="flex items-center justify-center space-x-6 mt-2 text-sm opacity-90">
                     <span className="flex items-center gap-2">
                       <Gift className="w-4 h-4" />
-                      {calendarData?.monthInfo?.holidays || 0} Holidays
+                      {getStats(currentSchoolId).totalHolidays} Holidays
                     </span>
                     <span className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {calendarData?.monthInfo?.totalDays || 0} Days
+                      {getStats(currentSchoolId).totalDays} Days
                     </span>
+                    {monthLoading && (
+                      <span className="flex items-center gap-2 text-yellow-200">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        >
+                          <Calendar className="w-4 h-4" />
+                        </motion.div>
+                        Loading...
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <button
                   onClick={() => navigateMonth(1)}
-                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white"
+                  disabled={monthLoading}
+                  className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
               </div>
             </div>
 
-            <div className="p-2 md:p-8">{renderCalendarGrid()}</div>
+            <div
+              className={`p-2 md:p-8 transition-opacity duration-200 ${
+                monthLoading ? "opacity-50" : "opacity-100"
+              }`}
+            >
+              {renderCalendarGrid()}
+            </div>
           </motion.div>
 
           {/* Holiday List */}
@@ -698,7 +636,11 @@ const SchoolHoliday = () => {
                 <Gift className="w-6 h-6" /> Holidays This Month
               </h3>
             </div>
-            <div className="p-6 md:p-6 max-h-[680px] overflow-y-auto">
+            <div
+              className={`p-6 md:p-6 max-h-[680px] overflow-y-auto transition-opacity duration-200 ${
+                monthLoading ? "opacity-50" : "opacity-100"
+              }`}
+            >
               {renderHolidaysList()}
             </div>
           </motion.div>

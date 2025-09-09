@@ -163,6 +163,7 @@ const useNotification = (open, onClose) => {
     };
   }, []);
 
+
   useEffect(() => {
     if (open && !initialLoadDone.current) {
       fetchNotifications();

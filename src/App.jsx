@@ -54,15 +54,7 @@ function App() {
           </Route>
 
           {/* Protected Route for Admin Panel */}
-          <Route
-            path="/"
-            element={
-              <UserProtectedRoute>
-                {" "}
-                <AdminPanelLayout />
-              </UserProtectedRoute>
-            }
-          >
+          <Route path="/" element={<UserProtectedRoute><AdminPanelLayout /></UserProtectedRoute>}>
             <Route index element={<Assignment />} />
             <Route path="ExamDatesheet" element={<ExamDatesheet />} />
             <Route path="chat" element={<StudentChatSystem />} />
