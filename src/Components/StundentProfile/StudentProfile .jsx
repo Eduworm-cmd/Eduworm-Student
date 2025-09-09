@@ -38,15 +38,6 @@ import {
 import { useSelector } from "react-redux";
 import { useStudentProfile } from "./useStudentProfile";
 
-const mockAttendanceData = {
-  totalWorkingDays: 187,
-  presentDays: 172,
-  absentDays: 12,
-  attendancePercentage: 92.0,
-  halfDays: 2,
-  leaveDays: 1,
-  notMarkedDays: 0,
-};
 
 export default function StudentProfile() {
   const [activeView, setActiveView] = useState("dashboard");
@@ -256,7 +247,6 @@ export default function StudentProfile() {
     </div>
   );
 }
-
 function LoadingState() {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -385,7 +375,9 @@ function MetricCard({ metric }) {
 }
 
 function AttendanceChart({ attendanceData }) {
-  const { presentDays, absentDays, attendancePercentage } = attendanceData;
+  console.log("Adsad",attendanceData);
+  
+  const { presentDays, absentDays, attendancePercentage } = attendanceData || {};
   const attendanceRate = attendancePercentage;
 
   return (
