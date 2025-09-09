@@ -181,6 +181,11 @@ export const Events = () => {
     };
   };
 
+
+
+
+
+
   if (isLoading) {
     return (
       <div className="min-h-[70vh] bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white flex items-center justify-center px-4 py-8">
@@ -196,6 +201,9 @@ export const Events = () => {
       </div>
     );
   }
+
+
+  
 
   if (!eventData || eventData.length === 0) {
     return (
