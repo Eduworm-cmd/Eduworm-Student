@@ -29,6 +29,7 @@ import {
   AlertTriangle,
   ArrowUp,
   MessageCircleQuestionMark,
+  MapPin,
 } from 'lucide-react';
 import { apiService } from '../../api/apiService';
 import { useSelector } from 'react-redux';
@@ -62,7 +63,7 @@ const useAssignments = () => {
     };
 
     fetchAssignments();
-  }, [studentId]); // Added studentId as dependency
+  }, [studentId]);
 
   return { assignments, loading };
 };
@@ -115,10 +116,12 @@ const useBranchWeekends = () => {
   return { weekends, loading };
 };
 
-const WeekDayCard = ({ day, isSelected, onClick }) => (
-  <div
-    onClick={onClick}
-    className={`relative overflow-hidden rounded-xl sm:rounded-2xl p-1 sm:p-4 md:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 
+// Updated WeekDayCard component - All days clickable like TimeTable
+const WeekDayCard = ({ day, isSelected, onClick }) => {
+  return (
+    <div
+      onClick={onClick}
+      className={`relative overflow-hidden rounded-xl sm:rounded-2xl p-1 sm:p-4 md:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 
             ${
               isSelected
                 ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
@@ -126,49 +129,57 @@ const WeekDayCard = ({ day, isSelected, onClick }) => (
                 ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-800 border-2 border-blue-300 shadow-md'
                 : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
             }`}
-  >
-    {isSelected && (
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-2 right-2 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 border-2 border-white rounded-full"></div>
-        <div className="absolute bottom-2 left-2 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border border-white rounded-full"></div>
-      </div>
-    )}
+    >
+      {/* Weekend/Holiday indicator */}
+      {day.isWeekend && (
+        <div className="absolute right-2 top-2 w-5 h-5 bg-orange-400 rounded-full flex items-center justify-center">
+          <span className="text-[10px] text-white">🏠</span>
+        </div>
+      )}
 
-    <div className="relative z-10 text-center">
-      <div
-        className={`font-semibold mb-1  text-[10px] sm:text-xs ${
-          isSelected
-            ? 'text-blue-100'
-            : day.isToday
-            ? 'text-blue-600'
-            : 'text-gray-500'
-        }`}
-      >
-        {day.isToday ? 'TODAY' : day.day.toUpperCase()}
-      </div>
+      {isSelected && (
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-2 right-2 w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 border-2 border-white rounded-full"></div>
+          <div className="absolute bottom-2 left-2 w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 border border-white rounded-full"></div>
+        </div>
+      )}
 
-      <div
-        className={`font-bold mb-1 text-xl sm:text-2xl md:text-3xl ${
-          isSelected ? 'text-white' : 'text-gray-900'
-        }`}
-      >
-        {day.date}
-      </div>
+      <div className="relative z-10 text-center">
+        <div
+          className={`font-semibold mb-1 text-[10px] sm:text-xs ${
+            isSelected
+              ? 'text-blue-100'
+              : day.isToday
+              ? 'text-blue-600'
+              : 'text-gray-500'
+          }`}
+        >
+          {day.isToday ? 'TODAY' : day.day.toUpperCase()}
+        </div>
 
-      <div
-        className={`hidden sm:block font-medium text-[11px] sm:text-sm ${
-          isSelected
-            ? 'text-blue-100'
-            : day.isToday
-            ? 'text-blue-700'
-            : 'text-gray-600'
-        }`}
-      >
-        {day.dayFull.toLowerCase()}
+        <div
+          className={`font-bold mb-1 text-xl sm:text-2xl md:text-3xl ${
+            isSelected ? 'text-white' : 'text-gray-900'
+          }`}
+        >
+          {day.date}
+        </div>
+
+        <div
+          className={`hidden sm:block font-medium text-[11px] sm:text-sm ${
+            isSelected
+              ? 'text-blue-100'
+              : day.isToday
+              ? 'text-blue-700'
+              : 'text-gray-600'
+          }`}
+        >
+          {day.monthName}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const FilterBar = ({ onFilterChange, availableSubjects }) => {
   return (
@@ -298,7 +309,7 @@ const ModernAssignmentCard = ({ assignment, onOpen }) => {
     if (hasQuiz) {
       const quizId = assignment.quizes[0]?._id;
       if (quizId) {
-        navigate(`/quiz/${quizId}`);
+        navigate(`/main/quiz/${quizId}`);
       }
     } else if (hasPlaylist) {
       onOpen(assignment);
@@ -418,6 +429,104 @@ const ModernAssignmentCard = ({ assignment, onOpen }) => {
   );
 };
 
+// Holiday Card Component like TimeTable
+const HolidayCard = ({ selectedDay }) => (
+  <div className="col-span-full">
+    <div className="relative overflow-hidden rounded-2xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-yellow-50 shadow-lg p-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-yellow-400 opacity-5"></div>
+
+      <div className="relative z-10 text-center">
+        <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-full flex items-center justify-center">
+          <span className="text-3xl">🏖️</span>
+        </div>
+
+        <h3 className="text-2xl font-bold text-orange-800 mb-2">Holiday</h3>
+        <p className="text-orange-700 text-lg mb-4">
+          It's {selectedDay?.dayFull}! No assignments scheduled today.
+        </p>
+
+        <div className="flex justify-center gap-4 text-sm">
+          <div className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-700 rounded-full">
+            <span>🏠</span>
+            <span>Family Time</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-full">
+            <span>🎮</span>
+            <span>Rest & Play</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Empty State Component like TimeTable
+const EmptyState = ({ selectedDay }) => {
+  const isWeekend = selectedDay?.isWeekend;
+
+  return (
+    <div className="text-center py-16 px-8">
+      <div className="relative">
+        <div
+          className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center ${
+            isWeekend
+              ? 'bg-gradient-to-br from-orange-100 to-yellow-100'
+              : 'bg-gradient-to-br from-blue-100 to-purple-100'
+          }`}
+        >
+          {isWeekend ? (
+            <span className="text-4xl">🏖️</span>
+          ) : (
+            <Calendar className="w-12 h-12 text-blue-500" />
+          )}
+        </div>
+        <div
+          className={`absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center ${
+            isWeekend ? 'bg-orange-100' : 'bg-yellow-100'
+          }`}
+        >
+          {isWeekend ? (
+            <span className="text-xs">🏠</span>
+          ) : (
+            <Bell className="w-4 h-4 text-yellow-600" />
+          )}
+        </div>
+      </div>
+
+      <h3
+        className={`text-xl font-bold mb-3 ${
+          isWeekend ? 'text-orange-800' : 'text-gray-800'
+        }`}
+      >
+        {isWeekend ? 'Holiday' : 'No Assignments Today'}
+      </h3>
+
+      <p className="text-gray-600 max-w-md mx-auto">
+        {isWeekend
+          ? `It's a holiday! No assignments scheduled for ${selectedDay?.day}. Enjoy your day off!`
+          : selectedDay
+          ? `Enjoy your free time! No assignments scheduled for ${selectedDay.day}`
+          : 'Select a day to view your assignments'}
+      </p>
+
+      <div className="mt-6">
+        <div
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+            isWeekend
+              ? 'bg-orange-50 text-orange-700 border border-orange-200'
+              : 'bg-blue-50 text-blue-700'
+          }`}
+        >
+          <MapPin className="w-4 h-4" />
+          <span>
+            {isWeekend ? 'Relax and enjoy!' : 'Take a break and recharge!'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Playlist Modal for Video Content
 const PlaylistModal = ({ isOpen, onClose, assignment }) => {
   const [activeVideo, setActiveVideo] = useState(null);
@@ -434,7 +543,7 @@ const PlaylistModal = ({ isOpen, onClose, assignment }) => {
   const videos = playlist.contents?.[0] || [];
 
   const getYouTubeId = (url) => {
-    const match = url.match(
+    const match = url?.match(
       /(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([^&\n?#]+)/,
     );
     return match ? match[1] : null;
@@ -710,12 +819,12 @@ const AssignmentBoard = () => {
 
   // Filter assignments by selected day
   const getAssignmentsForDay = (dayDate) => {
-    if (!dayDate) return assignments;
+    if (!dayDate) return assignments || [];
 
-    return assignments.filter((assignment) => {
+    return (assignments || []).filter((assignment) => {
       const assignmentDate = new Date(
         assignment.notificationTime,
-      ).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // ✅ IST
+      ).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
       return assignmentDate === dayDate;
     });
   };
@@ -768,12 +877,80 @@ const AssignmentBoard = () => {
     [filters],
   );
 
+  // Updated generateWeekDays - Show all 7 days like TimeTable
+  const generateWeekDays = useCallback(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const days = [];
+    const currentWeekMonday = new Date(today);
+    const dayOfWeek = today.getDay();
+    const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    currentWeekMonday.setDate(today.getDate() + daysFromMonday);
+    currentWeekMonday.setHours(0, 0, 0, 0);
+
+    const dayNames = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ];
+
+    // Always show all 7 days of the week (including weekends) like TimeTable
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(currentWeekMonday);
+      dayDate.setDate(currentWeekMonday.getDate() + i);
+
+      const dayIndex = dayDate.getDay();
+      const dayName = dayNames[dayIndex];
+      const isWeekend = weekends.includes(dayName);
+
+      days.push({
+        date: dayDate.getDate(),
+        day: dayDate.toLocaleDateString('en', { weekday: 'short' }),
+        dayFull: dayName,
+        isToday: dayDate.toDateString() === today.toDateString(),
+        todayFullDate: formatToIndiaDate(today),
+        fullDate: dayDate.toLocaleDateString('en-CA', {
+          timeZone: 'Asia/Kolkata',
+        }),
+        monthName: dayDate
+          .toLocaleString('en-IN', {
+            month: 'short',
+            timeZone: 'Asia/Kolkata',
+          })
+          .toLowerCase(),
+        isWeekend: isWeekend, // Add weekend flag like TimeTable
+      });
+    }
+
+    return days;
+  }, [weekends]);
+
+  const [weekDays, setWeekDays] = useState([]);
+
+  useEffect(() => {
+    if (!weekendsLoading) {
+      setWeekDays(generateWeekDays());
+    }
+  }, [weekendsLoading, weekends, generateWeekDays]);
+
   // Update filtered assignments when day or filters change
   useEffect(() => {
-    const dayAssignments = getAssignmentsForDay(selectedDay);
+    const dayAssignments = getAssignmentsForDay(selectedDay?.fullDate);
     const filtered = applyFilters(dayAssignments);
     setFilteredAssignments(filtered);
   }, [selectedDay, assignments, applyFilters]);
+
+  useEffect(() => {
+    if (!selectedDay && weekDays.length > 0) {
+      const today = weekDays.find((day) => day.isToday);
+      setSelectedDay(today || weekDays[0]);
+    }
+  }, [selectedDay, weekDays]);
 
   const handleOpenModal = (assignment) => {
     const hasPlaylist =
@@ -820,68 +997,6 @@ const AssignmentBoard = () => {
 
   const showCards = location.pathname === '/main/Assignment';
 
-  const generateWeekDays = useCallback(() => {
-    // Get current date in local timezone
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of day in local timezone
-
-    const days = [];
-    const currentWeekMonday = new Date(today);
-    const dayOfWeek = today.getDay();
-    const daysFromMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    currentWeekMonday.setDate(today.getDate() + daysFromMonday);
-    currentWeekMonday.setHours(0, 0, 0, 0);
-
-    const dayNames = [
-      'sunday',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-    ];
-
-    for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(currentWeekMonday);
-      dayDate.setDate(currentWeekMonday.getDate() + i);
-
-      const dayIndex = dayDate.getDay();
-      const dayName = dayNames[dayIndex];
-
-      if (weekends.length === 0 || !weekends.includes(dayName)) {
-        days.push({
-          date: dayDate.getDate(),
-          day: dayDate.toLocaleDateString('en', { weekday: 'short' }),
-          dayFull: dayDate.toLocaleDateString('en', { weekday: 'long' }),
-          isToday: dayDate.toDateString() === today.toDateString(),
-          todayFullDate: formatToIndiaDate(today),
-
-          fullDate: dayDate.toLocaleDateString('en-CA', {
-            timeZone: 'Asia/Kolkata',
-          }),
-        });
-      }
-    }
-
-    return days;
-  }, [weekends]);
-
-  const [weekDays, setWeekDays] = useState([]);
-
-  useEffect(() => {
-    if (!weekendsLoading) {
-      setWeekDays(generateWeekDays());
-    }
-  }, [weekendsLoading, weekends, generateWeekDays]);
-
-  useEffect(() => {
-    if (!selectedDay && weekDays.length > 0) {
-      const today = weekDays.find((day) => day.isToday);
-      setSelectedDay(today ? today.fullDate : weekDays[0].fullDate);
-    }
-  }, [selectedDay, weekDays]);
-
   if (loading || weekendsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900 flex items-center justify-center">
@@ -903,17 +1018,23 @@ const AssignmentBoard = () => {
 
   // Calculate statistics
   const stats = {
-    total: assignments?.length,
-    playlist: assignments?.filter(
-      (a) => a.playlistIds && a.playlistIds.length > 0,
-    ).length,
-    content: assignments?.filter((a) => a.content && a.content.length > 0)
-      .length,
-    quiz: assignments?.filter((a) => a.quizes && a.quizes.length > 0).length,
-    active: assignments?.filter((a) => a.isActive).length,
+    total: assignments?.length || 0,
+    playlist:
+      assignments?.filter((a) => a.playlistIds && a.playlistIds.length > 0)
+        .length || 0,
+    content:
+      assignments?.filter((a) => a.content && a.content.length > 0).length || 0,
+    quiz:
+      assignments?.filter((a) => a.quizes && a.quizes.length > 0).length || 0,
+    active: assignments?.filter((a) => a.isActive).length || 0,
   };
 
-  const selectedDayObj = weekDays.find((day) => day.fullDate === selectedDay);
+  const selectedDayObj = weekDays.find(
+    (day) => day.fullDate === selectedDay?.fullDate,
+  );
+
+  const cardShow = location.pathname.includes('/main/Assignment');
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1023,7 +1144,7 @@ const AssignmentBoard = () => {
             <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-sm border border-white/20">
               <Clock className="w-4 h-4" />
               {
-                assignments.filter((a) => {
+                (assignments || []).filter((a) => {
                   const daysLeft = Math.ceil(
                     (new Date(a.notificationTime) - new Date()) /
                       (1000 * 60 * 60 * 24),
@@ -1043,7 +1164,7 @@ const AssignmentBoard = () => {
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white text-sm border border-white/20">
               <Calendar className="w-4 h-4" />
-              Showing {weekDays.length} working days per week
+              Showing {weekDays.length} days per week
             </div>
           </div>
         </div>
@@ -1056,108 +1177,66 @@ const AssignmentBoard = () => {
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
               Your Active Assignments
-              {selectedDayObj && (
+              {selectedDay && (
                 <span className="text-lg font-normal text-gray-600 ml-3">
                   for{' '}
-                  {selectedDayObj.isToday
+                  {selectedDay.isToday
                     ? 'Today'
-                    : selectedDayObj.day + ', ' + selectedDayObj.date}
+                    : selectedDay.day + ', ' + selectedDay.date}
                 </span>
               )}
             </h2>
             <p className="text-sm sm:text-base text-gray-600">
-              Continue your learning journey with these personalized courses
+              {selectedDay?.isWeekend
+                ? 'Holiday - No assignments scheduled today'
+                : 'Continue your learning journey with these personalized courses'}
             </p>
           </div>
         </div>
 
-        {/* Week Day Selector - Only show if weekDays are loaded */}
         {weekDays.length > 0 && (
           <div className="mb-5">
             <div
-              className={`grid gap-2 sm:gap-4`}
-              style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+              className={`grid gap-2 sm:gap-4 grid-cols-7`} 
             >
               {weekDays.map((day, index) => (
                 <WeekDayCard
                   key={index}
                   day={day}
-                  isSelected={selectedDay === day.fullDate}
-                  onClick={() => setSelectedDay(day.fullDate)}
+                  isSelected={selectedDay?.fullDate === day.fullDate}
+                  onClick={() => setSelectedDay(day)} 
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* Filter Bar */}
-        <FilterBar
-          onFilterChange={handleFilterChange}
-          availableSubjects={availableSubjects}
-        />
+        {/* Filter Bar - Only show for non-weekend days */}
+        {!selectedDay?.isWeekend && (
+          <FilterBar
+            onFilterChange={handleFilterChange}
+            availableSubjects={availableSubjects}
+          />
+        )}
 
         {/* Assignment Grid */}
-        {filteredAssignments.length > 0 ? (
-          <div
-            className={`grid grid-cols-1 sm:grid-cols-2 ${
-              showCards ? 'xl:grid-cols-3' : 'xl:grid-cols-2'
-            } gap-6 sm:gap-8`}
-          >
-            {filteredAssignments.map((assignment, index) => (
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${cardShow ?'lg:grid-cols-3' : 'xl:grid-cols-2'} gap-6`}>
+          {selectedDay?.isWeekend ? (
+            <HolidayCard selectedDay={selectedDay} />
+          ) : filteredAssignments.length > 0 ? (
+            filteredAssignments.map((assignment, index) => (
               <ModernAssignmentCard
                 key={assignment._id || index}
                 assignment={assignment}
                 onOpen={handleOpenModal}
               />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <BookOpen className="w-10 h-10 text-gray-400" />
+            ))
+          ) : (
+            <div className="col-span-full">
+              <EmptyState selectedDay={selectedDay} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {assignments.length === 0
-                ? 'No assignments found'
-                : selectedDayObj
-                ? `No assignments for ${
-                    selectedDayObj.isToday ? 'today' : selectedDayObj.day
-                  }`
-                : 'No matching assignments'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {assignments.length === 0
-                ? "You don't have any active assignments at the moment."
-                : selectedDayObj &&
-                  getAssignmentsForDay(selectedDay).length === 0
-                ? `No assignments scheduled for ${
-                    selectedDayObj.isToday ? 'today' : 'this day'
-                  }. Try selecting a different day.`
-                : 'Try adjusting your filters to see more assignments.'}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              {(filters.subject || filters.type || filters.progress) && (
-                <button
-                  onClick={clearFilters}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
-                >
-                  Clear Filters
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  const today = weekDays.find((day) => day.isToday);
-                  if (today) setSelectedDay(today.fullDate);
-                }}
-                className="px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors"
-              >
-                {assignments.length === 0
-                  ? 'Browse Courses'
-                  : "View Today's Assignments"}
-              </button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Modals */}

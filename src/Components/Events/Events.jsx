@@ -68,17 +68,22 @@ export const Events = () => {
 
   const fetchEvent = async () => {
     try {
+      setIsLoading(true);
       const response = await getEvents(user?.branchId);
       setEventData(response?.data?.data || []);
     } catch (error) {
       console.log(error);
       setEventData([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     if (user?.branchId) {
       fetchEvent();
+    } else {
+      setIsLoading(false);
     }
   }, [user?.branchId]);
 
