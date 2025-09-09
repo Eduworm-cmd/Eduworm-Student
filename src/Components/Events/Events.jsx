@@ -22,7 +22,7 @@ import QuillContent from "../QuillContent/QuillContent";
 
 export const Events = () => {
   const user = useSelector((state) => state.auth.user);
-
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventData, setEventData] = useState();
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,6 +152,76 @@ export const Events = () => {
       },
     ];
   }, [filteredEvents]);
+
+  const getStatusInfo = (event) => {
+    const dayLeft = parseInt(event.leftDay);
+
+    if (dayLeft < 0) {
+      return {
+        text: 'Completed',
+        color:
+          'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200',
+        icon: <CheckCircle className="w-4 h-4" />,
+        priority: 'low',
+      };
+    }
+
+    if (dayLeft === 0) {
+      return {
+        text: 'Today',
+        color:
+          'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border border-orange-200',
+        icon: <AlertCircle className="w-4 h-4" />,
+        priority: 'high',
+      };
+    }
+
+    if (dayLeft === 1) {
+      return {
+        text: 'Tomorrow',
+        color:
+          'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border border-emerald-200',
+        icon: <Bell className="w-4 h-4" />,
+        priority: 'high',
+      };
+    }
+
+    return {
+      text: `${dayLeft} days left`,
+      color:
+        dayLeft <= 3
+          ? 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border border-red-200'
+          : dayLeft <= 7
+          ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border border-yellow-200'
+          : 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200',
+      icon: <Calendar className="w-4 h-4" />,
+      priority: dayLeft <= 3 ? 'high' : dayLeft <= 7 ? 'medium' : 'low',
+    };
+  };
+
+
+
+
+
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[70vh] bg-gradient-to-br from-indigo-50 via-blue-100/70 to-white flex items-center justify-center px-4 py-8">
+        <div className="max-w-md w-full bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 shadow-xl p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <h3 className="text-xl font-bold text-gray-800 mb-1">
+            Loading Events...
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Please wait while we fetch the latest events.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+
+  
 
   if (!eventData || eventData.length === 0) {
     return (
